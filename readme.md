@@ -9,7 +9,7 @@ low friction c# linting for teams without requiring everyone to install
 ReGitLint puts and end to style wars by making it easy to add git hooks
 and CI checks to ensure code is formatted consistenlty. Your team will
 be holding hands and singing kum ba yah in no time!
-![](https://giphy.com/gifs/southparkgifs-3oz8xClhwv2EnhZeXS)
+![Kum ba yah](https://giphy.com/gifs/southparkgifs-3oz8xClhwv2EnhZeXS)
 
 Formatting options are specified in
 [.editorconfig](https://editorconfig.org/) so everyone can use their
