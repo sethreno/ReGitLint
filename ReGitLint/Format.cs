@@ -74,7 +74,6 @@ namespace ReCleanWrap {
 		public bool FailOnDiff { get; set; }
 
 		public override int Run(string[] remainingArguments) {
-			if (string.IsNullOrEmpty(FilePattern)) FilePattern = "**/*";
 			var files = GetFilesToFormat(FilePattern, FilesToFormat, CommitA, CommitB);
 
 			if (!files.Any()) {
@@ -126,32 +125,30 @@ namespace ReCleanWrap {
 			string commitB
 		) {
 			var files = new HashSet<string>();
+			var gitCommand = "";
 			switch (filesToFormat) {
 				case FileMatch.PatternOnly:
-					files.Add(pattern);
+					files.Add(string.IsNullOrEmpty(pattern) ? "**/*" : pattern);
 					break;
 				case FileMatch.Staged:
-					GetFileListFromGit("git diff --name-only --diff-filter=ACM --cached")
-						.Where(x => Operators.LikeString(x, pattern, CompareMethod.Text))
-						.ToList()
-						.ForEach(x => files.Add(x));
+					gitCommand = "git diff --name-only --diff-filter=ACM --cached";
 					break;
 				case FileMatch.Modified:
-					GetFileListFromGit("git diff --name-only --diff-filter=ACM")
-						.Where(x => Operators.LikeString(x, pattern, CompareMethod.Text))
-						.ToList()
-						.ForEach(x => files.Add(x));
+					gitCommand = "git diff --name-only --diff-filter=ACM";
 					break;
 				case FileMatch.Commits:
-					GetFileListFromGit(
-							$"git diff --name-only --diff-filter=ACM {commitA} {commitB}")
-						.Where(x => Operators.LikeString(x, pattern, CompareMethod.Text))
-						.ToList()
-						.ForEach(x => files.Add(x));
+					gitCommand = $"git diff --name-only --diff-filter=ACM {commitA} {commitB}";
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+
+			GetFileListFromGit(gitCommand)
+				.Where(x =>
+					string.IsNullOrEmpty(pattern) ||
+					Operators.LikeString(x, pattern, CompareMethod.Text))
+				.ToList()
+				.ForEach(x => files.Add(x));
 
 			return files;
 		}

@@ -21,31 +21,31 @@ Example Usage:
 
     `ReGitLint.exe format -s .\Example.sln`
 
+* Format all staged files
+
+    `ReGitLint.exe format -s .\Example.sln -f Staged
+
 * Format modified c# files
 
     `ReGitLint.exe format -s .\Example.sln -f Modified -p "*.cs"`
 
-* Format all staged files
-
-    `ReGitLint.exe format -s .\Example.sln -f Staged -p "*"`
-
 * Format all files modified by commit 3796556
 
-	`ReGitLint.exe format -s .\Example.sln -f Commits -a 3796556 -p "*"`
+	`ReGitLint.exe format -s .\Example.sln -f Commits -a 3796556
 
 * Format all files modified between commit 6708090 and 3796556
 
-    `ReGitLint.exe format -s .\Example.sln -f Commits -a 6708090 -b 3796556 -p "*"`
+    `ReGitLint.exe format -s .\Example.sln -f Commits -a 6708090 -b 3796556
 
 * Format staged files, return 1 if files change. Handy for git hooks.
 
-    `ReGitLint.exe format -s .\Example.sln -f Staged -p "*" -d`
+    `ReGitLint.exe format -s .\Example.sln -f Staged -d`
 
 * Format files between commits and return 1 if files change. Handy for
   enforcing code formatting on build server.
 
-    `ReGitLint.exe format -s .\Example.sln -f Commits -a 6708090 -b 3796556 -p "*" -d`
+    `ReGitLint.exe format -s .\Example.sln -f Commits -a 6708090 -b 3796556 -d`
 
 * Enforce code formatting on jenkins
 
-    `ReGitLint.exe format -s .\Example.sln -f -p "*" -d Commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT`
+    `ReGitLint.exe format -s .\Example.sln -f -d Commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT`
