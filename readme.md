@@ -24,7 +24,7 @@ Example Usage:
 
 * Format all staged files
 
-    `ReGitLint.exe format -s .\Example.sln -f Staged
+    `ReGitLint.exe format -s .\Example.sln -f Staged`
 
 * Format modified c# files
 
@@ -32,11 +32,11 @@ Example Usage:
 
 * Format all files modified by commit 3796556
 
-	`ReGitLint.exe format -s .\Example.sln -f Commits -a 3796556
+	`ReGitLint.exe format -s .\Example.sln -f Commits -a 3796556`
 
 * Format all files modified between commit 6708090 and 3796556
 
-    `ReGitLint.exe format -s .\Example.sln -f Commits -a 6708090 -b 3796556
+    `ReGitLint.exe format -s .\Example.sln -f Commits -a 6708090 -b 3796556`
 
 * Format staged files, return 1 if files change. Handy for git hooks.
 
