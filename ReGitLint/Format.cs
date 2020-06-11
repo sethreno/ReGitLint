@@ -108,8 +108,10 @@ namespace ReCleanWrap {
 					}
 
 					if (diffFiles.Any()) {
+						Console.WriteLine();
+						Console.WriteLine("!!!! Process Aborted !!!!");
 						Console.WriteLine("Code formatter changed the following files:");
-						diffFiles.ForEach(Console.WriteLine);
+						diffFiles.ForEach(x => { Console.WriteLine($" * {x}"); });
 						return 1;
 					}
 				}
