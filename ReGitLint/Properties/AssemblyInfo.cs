@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ReGitLint")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Low friction code formatting for .net projects")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ReGitLint")]
-[assembly: AssemblyCopyright("Copyright ©  2019")]
+[assembly: AssemblyCopyright("Copyright © 2019 Seth Reno")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
