@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>Seth Reno</authors>
+	<license type="expression">MIT</license>
+    <projectUrl>https://github.com/sethreno/ReGitLint#regitlint</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Low friction code formatting for .net projects</description>
+    <copyright>Copyright 2020 Seth Reno</copyright>
+    <tags>.net;c#;git;lint;ci</tags>
+  </metadata>
+</package>
