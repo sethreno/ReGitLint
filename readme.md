@@ -3,12 +3,12 @@
 Integrates the free
 [CleanupCode](https://www.jetbrains.com/help/resharper/CleanupCode.html)
 command line tool from ReSharper Command Line Tools with git to provide
-low friction c#,  linting for teams without requiring everyone to install
+low friction .net linting for teams without requiring everyone to install
 [ReSharper](https://www.jetbrains.com/resharper/).
 
 [CleanupCode](https://www.jetbrains.com/help/resharper/CleanupCode.html)
 supports formatting c# as well as vb.net, c++, html, asp.net, razor,
-javascript, typescript, css, xml, xaml.
+javascript, typescript, css, xml, & xaml.
 
 ReGitLint puts and end to style wars by making it easy to add git hooks
 and CI checks to ensure code is formatted consistenlty. Your team will
