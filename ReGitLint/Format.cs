@@ -177,7 +177,7 @@ namespace ReCleanWrap {
 			using (var process = new Process()) {
 				process.StartInfo.FileName = exe;
 				process.StartInfo.Arguments =
-					$@"{slnFile} {flags} --profile=""{profile}"" --include=""{include}""";
+					$@"""{slnFile}"" {flags} --profile=""{profile}"" --include=""{include}""";
 				process.StartInfo.UseShellExecute = false;
 				process.StartInfo.RedirectStandardOutput = true;
 				process.StartInfo.RedirectStandardError = true;
