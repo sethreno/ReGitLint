@@ -26,8 +26,8 @@ favorite editor. There are many formatting options supported... Here's
 Add the following to .git/hooks/pre-commit
 
     #!/bin/sh
-    nuget install regitlint -Version 1.5.0 -OutputDirectory packages
-    packages/ReGitLint.1.5.0/tools/ReGitLint.exe -s Example.sln -f Staged -d
+    nuget install regitlint -Version 1.5.1 -OutputDirectory packages
+    packages/ReGitLint.1.5.1/tools/ReGitLint.exe -s Example.sln -f Staged -d
 
 ReGitLint will run
 [CleanupCode](https://www.jetbrains.com/help/resharper/CleanupCode.html) to
