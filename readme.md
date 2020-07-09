@@ -74,3 +74,10 @@ message like:
 * Enforce code formatting on jenkins
 
     `ReGitLint.exe format -s .\Example.sln -f -d Commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT`
+
+
+----
+
+If you've found ReGitLint helpful you can
+[buy me a coffee](https://www.buymeacoffee.com/sethreno) to say thanks.
+Cheers!
