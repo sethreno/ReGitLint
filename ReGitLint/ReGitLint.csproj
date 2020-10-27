@@ -3,6 +3,23 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
+
+	<!-- Dotnet Tool Specific settings -->
+  <PropertyGroup>
+    <PackAsTool>true</PackAsTool>
+    <PackageId>ReGitLint</PackageId>
+	<PackageVersion>2.0.1</PackageVersion>
+    <ToolCommandName>regitlint</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<RepositoryUrl>https://github.com/sethreno/ReGitLint</RepositoryUrl>
+	<Authors>Seth Reno</Authors>
+	<PackageDescription>Low friction code formatting for .net projects</PackageDescription>
+	<Copyright>Copyright 2020 Seth Reno</Copyright>
+	<PackageTags>.net;c#;git;lint;ci</PackageTags>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="ManyConsole" Version="2.0.1"/>
   </ItemGroup>
