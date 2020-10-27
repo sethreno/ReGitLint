@@ -4,11 +4,12 @@ root=true
 # top-most EditorConfig file
 
 [*]
-indent_style=tab
+indent_style=space
 indent_size=4
 tab_width=4
 end_of_line=lf
 insert_final_newline=true
+max_line_length=80
 
 # Microsoft .NET properties
 csharp_new_line_before_catch=false
@@ -45,7 +46,6 @@ resharper_brace_style=end_of_line
 resharper_csharp_empty_block_style=together_same_line
 resharper_csharp_keep_blank_lines_in_code=1
 resharper_csharp_keep_blank_lines_in_declarations=1
-resharper_csharp_max_line_length=100
 resharper_csharp_stick_comment=false
 resharper_csharp_wrap_before_ternary_opsigns=false
 resharper_csharp_wrap_for_stmt_header_style=chop_if_long
@@ -68,4 +68,3 @@ resharper_wrap_object_and_collection_initializer_style=chop_if_long
 # ReSharper inspection severities
 resharper_built_in_type_reference_style_highlighting=none
 resharper_redundant_base_qualifier_highlighting=warning
-
