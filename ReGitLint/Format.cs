@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Management.Automation;
 using System.Text;
 using System.Threading;
 
@@ -21,7 +20,7 @@ namespace ReCleanWrap {
 			HasRequiredOption(
 				"s|solution-file=",
 				"Path to .sln or .csproj file.",
-				x => SolutionFile = x);
+				x => SolutionFile = x.Trim());
 			HasOption(
 				"f|files-to-format=",
 				"Optional. Default is PatternOnly. Choices include:\n" +
@@ -93,7 +92,10 @@ namespace ReCleanWrap {
 					remain.Remove(file);
 				}
 
-				RunCleanupCode(profile, include.ToString(), SolutionFile);
+				var returnCode = RunCleanupCode(
+					profile, include.ToString(), SolutionFile);
+
+				if (returnCode != 0) return returnCode;
 			}
 
 			if (FailOnDiff) {
@@ -145,39 +147,49 @@ namespace ReCleanWrap {
 					throw new ArgumentOutOfRangeException();
 			}
 
-			GetFileListFromGit(gitCommand)
-				.Where(x =>
-					string.IsNullOrEmpty(pattern) ||
-					Operators.LikeString(x, pattern, CompareMethod.Text))
-				.ToList()
-				.ForEach(x => files.Add(x));
+			/* 			GetFileListFromGit(gitCommand)
+							.Where(x =>
+								string.IsNullOrEmpty(pattern) ||
+								Operators.LikeString(x, pattern, CompareMethod.Text))
+							.ToList()
+							.ForEach(x => files.Add(x)); */
 
 			return files;
 		}
 
 		private static List<string> GetFileListFromGit(string gitCommand) {
-			using (var ps = PowerShell.Create()) {
-				ps.AddScript(gitCommand);
-				return ps.Invoke<string>().ToList();
-			}
+			// todo use cross platform git lib or cross platform powershell
+			/* 			using (var ps = PowerShell.Create()) {
+							ps.AddScript(gitCommand);
+							return ps.Invoke<string>().ToList();
+						} */
+			return new List<string>();
 		}
 
-		private static string FindCodeCleanup(string dir) {
-			var files = Directory.GetFiles(dir, "cleanupcode.exe", SearchOption.AllDirectories);
-			if (files.Any()) return files.First();
-			var parentDir = Directory.GetParent(dir);
-			if (parentDir == null) throw new Exception("could not find codecleanup.exe");
-			return FindCodeCleanup(parentDir.FullName);
-		}
-
-		private static void RunCleanupCode(string profile, string include, string slnFile) {
-			var exe = FindCodeCleanup(AppDomain.CurrentDomain.BaseDirectory);
+		private static int RunCleanupCode(string profile, string include, string slnFile) {
 			const string flags = "-dsl=GlobalAll -dsl=SolutionPersonal -dsl=ProjectPersonal";
 
 			using (var process = new Process()) {
-				process.StartInfo.FileName = exe;
+				process.StartInfo.FileName = "dotnet";
+				process.StartInfo.Arguments = $"tool run jb cleanupcode -v";
+				process.Start();
+				process.WaitForExit();
+				if (process.ExitCode == 1) {
+					// todo add option to install automatically
+					Console.WriteLine(@"
+looks like jb dotnet tool isn't installed...
+you can install it by running the following command:
+
+	dotnet tool install JetBrains.ReSharper.GlobalTools");
+					return 1;
+				}
+			}
+
+			using (var process = new Process()) {
+				process.StartInfo.FileName = "dotnet";
 				process.StartInfo.Arguments =
-					$@"""{slnFile}"" {flags} --profile=""{profile}"" --include=""{include}""";
+					$@"tool run jb cleanupcode ""{slnFile}"" {flags}"
+					+ $@" --profile=""{profile}"" --include=""{include}""";
 				process.StartInfo.UseShellExecute = false;
 				process.StartInfo.RedirectStandardOutput = true;
 				process.StartInfo.RedirectStandardError = true;
@@ -212,9 +224,10 @@ namespace ReCleanWrap {
 
 					if (process.WaitForExit(overallTimeout) &&
 						outputWaitHandle.WaitOne(outputTimeout) &&
-						errorWaitHandle.WaitOne(outputTimeout)) return;
+						errorWaitHandle.WaitOne(outputTimeout)) return 0;
 
-					throw new Exception("cleanupcode.exe timed out");
+					Console.WriteLine("cleanupcode.exe timed out");
+					return 1;
 				}
 			}
 		}
