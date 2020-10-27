@@ -73,8 +73,8 @@ namespace ReCleanWrap {
         public bool FailOnDiff { get; set; }
 
         public override int Run(string[] remainingArguments) {
-            var files = GetFilesToFormat(FilePattern, FilesToFormat, CommitA,
-                CommitB);
+            var files = GetFilesToFormat(
+                FilePattern, FilesToFormat, CommitA, CommitB);
 
             if (!files.Any()) {
                 Console.WriteLine("Nothing to format.");
@@ -135,47 +135,91 @@ namespace ReCleanWrap {
             string commitB
         ) {
             var files = new HashSet<string>();
-            var gitCommand = "";
+            var gitArgs = "";
             switch (filesToFormat) {
                 case FileMatch.PatternOnly:
                     files.Add(string.IsNullOrEmpty(pattern) ? "**/*" : pattern);
-                    break;
+                    return files;
+
                 case FileMatch.Staged:
-                    gitCommand =
-                        "git diff --name-only --diff-filter=ACM --cached";
+                    gitArgs = "diff --name-only --diff-filter=ACM --cached";
                     break;
+
                 case FileMatch.Modified:
-                    gitCommand = "git diff --name-only --diff-filter=ACM";
+                    gitArgs = "diff --name-only --diff-filter=ACM";
                     break;
+
                 case FileMatch.Commits:
-                    gitCommand = "git diff --name-only --diff-filter=ACM"
+                    gitArgs = "diff --name-only --diff-filter=ACM"
                         + $" {commitA} {commitB}";
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            /* 			GetFileListFromGit(gitCommand)
-                            .Where(x =>
-                                string.IsNullOrEmpty(pattern) ||
-                                Operators.LikeString(x, pattern, CompareMethod.Text))
-                            .ToList()
-                            .ForEach(x => files.Add(x)); */
+            GetFileListFromGit(gitArgs)
+                .ToList()
+                .ForEach(x => files.Add(x));
 
             return files;
         }
 
-        private static List<string> GetFileListFromGit(string gitCommand) {
+        private static List<string> GetFileListFromGit(string gitArgs) {
             // todo use cross platform git lib or cross platform powershell
-            /* 			using (var ps = PowerShell.Create()) {
-                            ps.AddScript(gitCommand);
-                            return ps.Invoke<string>().ToList();
-                        } */
-            return new List<string>();
+            // or maybe just call git directly?
+            var files = new HashSet<string>();
+
+            using (var process = new Process()) {
+                process.StartInfo.FileName = "git";
+                process.StartInfo.Arguments = gitArgs;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+
+                using (var outputWaitHandle = new AutoResetEvent(false))
+                using (var errorWaitHandle = new AutoResetEvent(false)) {
+                    process.OutputDataReceived += (sender, e) => {
+                        if (e.Data == null) {
+                            outputWaitHandle.Set();
+                        } else {
+                            files.Add(e.Data.Trim());
+                        }
+                    };
+                    process.ErrorDataReceived += (sender, e) => {
+                        if (e.Data == null) {
+                            errorWaitHandle.Set();
+                        } else {
+                            Console.WriteLine(e.Data);
+                        }
+                    };
+
+                    process.Start();
+
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    var overallTimeout =
+                        (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
+                    var outputTimeout =
+                        (int)TimeSpan.FromMinutes(1).TotalMilliseconds;
+
+                    if (process.WaitForExit(overallTimeout) &&
+                        outputWaitHandle.WaitOne(outputTimeout) &&
+                        errorWaitHandle.WaitOne(outputTimeout)) {
+                        return files.ToList();
+                    }
+                }
+
+                throw new Exception($"git {gitArgs} timed out");
+            }
         }
 
-        private static int RunCleanupCode(string profile, string include,
-            string slnFile) {
+        private static int RunCleanupCode(
+            string profile,
+            string include,
+            string slnFile
+        ) {
             const string flags =
                 "-dsl=GlobalAll -dsl=SolutionPersonal -dsl=ProjectPersonal";
 
