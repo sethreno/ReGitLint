@@ -48,6 +48,19 @@ message like:
      * Directory/SomeCode.cs
 
 
+To enforce code formatting on the build server add this to your build script
+
+    `dotnet regitlint -f commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT --fail-on-diff --print-diff`
+
+Or if you use jenkins you can just add this
+
+    `dotnet regitlint --jenkins`
+
+This will only format the files changed betwen the commit that triggered the
+build and the commit that triggered the last successful build. This saves a
+lot of time when compared to formatting all files on a large project.
+
+
 ## More Examples:
 
 * Format everything
@@ -85,7 +98,7 @@ message like:
 
 * Enforce code formatting on other build servers
 
-    `dotnet regitlint -f commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT --fail-on-diff`
+    `dotnet regitlint -f commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT --fail-on-diff --print-diff`
 
 
 ----
