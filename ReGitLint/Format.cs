@@ -190,7 +190,7 @@ namespace ReGitLint {
 
         private static bool DoesJbToolExist() {
             var exitCode = CmdUtil.Run("dotnet", "tool run jb cleanupcode -v");
-            return (exitCode == 0);
+            return exitCode == 0;
         }
 
         private int RunCleanupCode(
