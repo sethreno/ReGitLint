@@ -34,7 +34,7 @@ Install jb & regitlint
 
 Now to format the whole solution run
 
-    `dotnet regitlint`
+    dotnet regitlint
 
 To keep everything formatted you can add a pre-commit hook and build step.
 Don't panic!!! ReGitLint has options to format only what's changed so it's fast!
@@ -57,13 +57,13 @@ message like:
 
 To enforce code formatting on the build server add this to your build script
 
-    `dotnet tool restore`
-    `dotnet regitlint -f commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT --fail-on-diff --print-diff`
+    dotnet tool restore
+    dotnet regitlint -f commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT --fail-on-diff --print-diff
 
 Or if you use jenkins you can just add this
 
-    `dotnet tool restore`
-    `dotnet regitlint --jenkins`
+    dotnet tool restore
+    dotnet regitlint --jenkins
 
 This will only format the files changed betwen the commit that triggered the
 build and the commit that triggered the last successful build. This saves a
