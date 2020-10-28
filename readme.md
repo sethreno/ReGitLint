@@ -81,7 +81,11 @@ message like:
 
 * Enforce code formatting on jenkins
 
-    `dotnet regitlint -f -d commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT`
+    `dotnet regitlint --jenkins`
+
+* Enforce code formatting on other build servers
+
+    `dotnet regitlint -f commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT --fail-on-diff`
 
 
 ----

@@ -61,6 +61,14 @@ namespace ReGitLint {
                 "skip-tool-check",
                 "Skip the check to see if the jb dotnet tool exists.",
                 x => SkipToolCheck = x != null);
+            HasOption(
+                "jenkins",
+                "Format files changed between recent commits and fail on diff",
+                x => Jenkins = x != null);
+            HasOption(
+                "print-diff",
+                "Prints the full diff on fail-on-diff",
+                x => FailOnDiff = x != null);
         }
 
         public string SolutionFile { get; set; }
@@ -70,9 +78,13 @@ namespace ReGitLint {
         public string CommitB { get; set; }
         public bool FormatOnly { get; set; }
         public bool FailOnDiff { get; set; }
+        public bool PrintDiff { get; set; }
         public bool SkipToolCheck { get; set; }
+        public bool Jenkins { get; set; }
 
         public override int Run(string[] remainingArguments) {
+            if (Jenkins) SetJenkinsOptions();
+
             var files = GetFilesToFormat(
                 FilePattern, FilesToFormat, CommitA, CommitB);
 
@@ -127,6 +139,9 @@ namespace ReGitLint {
                             "Code formatter changed the following files:");
                         diffFiles.ForEach(
                             x => { Console.WriteLine($" * {x}"); });
+
+                        if (PrintDiff) CmdUtil.Run("git", "diff");
+
                         return 1;
                     }
                 }
@@ -143,6 +158,15 @@ namespace ReGitLint {
             if (parentDir == null)
                 throw new Exception("could not find sln file");
             return FindSlnFile(parentDir.FullName);
+        }
+
+        private void SetJenkinsOptions() {
+            FailOnDiff = true;
+            PrintDiff = true;
+            FilesToFormat = FileMatch.Commits;
+            CommitA = Environment.GetEnvironmentVariable(
+                "GIT_PREVIOUS_SUCCESSFUL_COMMIT");
+            CommitB = Environment.GetEnvironmentVariable("GIT_COMMIT");
         }
 
         private static HashSet<string> GetFilesToFormat(
@@ -167,6 +191,10 @@ namespace ReGitLint {
                     break;
 
                 case FileMatch.Commits:
+                    if (string.IsNullOrEmpty(commitA)) commitA = commitB;
+                    if (string.IsNullOrEmpty(commitB)) commitB = commitA;
+                    if (commitA == commitB) commitB = null;
+
                     gitArgs = "diff --name-only --diff-filter=ACM"
                         + $" {commitA} {commitB}";
                     break;

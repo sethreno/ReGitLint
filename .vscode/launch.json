@@ -11,10 +11,9 @@
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/ReGitLint/bin/Debug/netcoreapp3.1/ReGitLint.dll",
             "args": [
-                "--skip-tool-check",
-                "-f staged",
-                "--fail-on-diff"
+                "--jenkins"
             ],
+            "env": {"GIT_COMMIT":"73984afc4b213", "GIT_PREVIOUS_SUCCESSFUL_COMMIT":"75d034265fb9"},
             "cwd": "${workspaceFolder}/ReGitLint",
             "console": "internalConsole",
             "stopAtEntry": false

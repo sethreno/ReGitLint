@@ -2,8 +2,6 @@
 
 *  run the following commands:
 
-
-    dotnet build
-    nuget pack .\ReGitLint.nuspec
+    dotnet build -c Release
 
 * upload .nupkg to nuget.org
