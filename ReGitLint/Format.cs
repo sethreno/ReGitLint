@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using ManyConsole;
 
-namespace ReCleanWrap {
+namespace ReGitLint {
     public class Format : ConsoleCommand {
         public enum FileMatch {
             Pattern,
@@ -167,63 +165,14 @@ namespace ReCleanWrap {
         }
 
         private static List<string> GetFileListFromGit(string gitArgs) {
-            // todo use cross platform git lib or cross platform powershell
-            // or maybe just call git directly?
             var files = new HashSet<string>();
-
-            using (var process = new Process()) {
-                process.StartInfo.FileName = "git";
-                process.StartInfo.Arguments = gitArgs;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-
-                using (var outputWaitHandle = new AutoResetEvent(false))
-                using (var errorWaitHandle = new AutoResetEvent(false)) {
-                    process.OutputDataReceived += (sender, e) => {
-                        if (e.Data == null) {
-                            outputWaitHandle.Set();
-                        } else {
-                            files.Add(e.Data.Trim());
-                        }
-                    };
-                    process.ErrorDataReceived += (sender, e) => {
-                        if (e.Data == null) {
-                            errorWaitHandle.Set();
-                        } else {
-                            Console.WriteLine(e.Data);
-                        }
-                    };
-
-                    process.Start();
-
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-
-                    var overallTimeout =
-                        (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
-                    var outputTimeout =
-                        (int)TimeSpan.FromMinutes(1).TotalMilliseconds;
-
-                    if (process.WaitForExit(overallTimeout) &&
-                        outputWaitHandle.WaitOne(outputTimeout) &&
-                        errorWaitHandle.WaitOne(outputTimeout)) {
-                        return files.ToList();
-                    }
-                }
-
-                throw new Exception($"git {gitArgs} timed out");
-            }
+            CmdUtil.Run("git", gitArgs, data => files.Add(data.Trim()));
+            return files.ToList();
         }
 
         private static bool DoesJbToolExist() {
-            using (var process = new Process()) {
-                process.StartInfo.FileName = "dotnet";
-                process.StartInfo.Arguments = "tool run jb cleanupcode -v";
-                process.Start();
-                process.WaitForExit();
-                return (process.ExitCode == 0);
-            }
+            var exitCode = CmdUtil.Run("dotnet", "tool run jb cleanupcode -v");
+            return (exitCode == 0);
         }
 
         private int RunCleanupCode(
@@ -246,7 +195,7 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
             var args = $@"tool run jb cleanupcode ""{slnFile}"" {flags}"
                 + $@" --profile=""{profile}"" --include=""{include}""";
 
-            return RunCommand("dotnet", args,
+            return CmdUtil.Run("dotnet", args,
 
                 // this can take a really long time on large code bases
                 cmdTimeout: TimeSpan.FromHours(24),
@@ -255,67 +204,6 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
                 // to get formatted
                 outputTimeout: TimeSpan.FromMinutes(10)
             );
-        }
-
-        private int RunCommand(
-            string cmd,
-            string args,
-            Action<string> outputCallback = null,
-            Action<string> errorCallback = null,
-            TimeSpan? cmdTimeout = null,
-            TimeSpan? outputTimeout = null
-        ) {
-            void WriteToConsole(string data) {
-                Console.WriteLine(data);
-            }
-
-            outputCallback = outputCallback ?? WriteToConsole;
-            errorCallback = errorCallback ?? WriteToConsole;
-            cmdTimeout = cmdTimeout ?? TimeSpan.FromMinutes(10);
-            outputTimeout = outputTimeout ?? TimeSpan.FromMinutes(1);
-
-            using (var process = new Process()) {
-                process.StartInfo.FileName = cmd;
-                process.StartInfo.Arguments = args;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-
-                using (var outputWaitHandle = new AutoResetEvent(false))
-                using (var errorWaitHandle = new AutoResetEvent(false)) {
-                    process.OutputDataReceived += (sender, e) => {
-                        if (e.Data == null) {
-                            outputWaitHandle.Set();
-                        } else {
-                            outputCallback(e.Data);
-                        }
-                    };
-                    process.ErrorDataReceived += (sender, e) => {
-                        if (e.Data == null) {
-                            errorWaitHandle.Set();
-                        } else {
-                            errorCallback(e.Data);
-                        }
-                    };
-
-                    process.Start();
-
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-
-                    var cmdTimeoutMs = cmdTimeout.Value.TotalMilliseconds;
-                    var outTimeoutMs = outputTimeout.Value.TotalMilliseconds;
-
-                    if (process.WaitForExit((int)cmdTimeoutMs) &&
-                        outputWaitHandle.WaitOne((int)outTimeoutMs) &&
-                        errorWaitHandle.WaitOne((int)outTimeoutMs)) {
-                        return process.ExitCode;
-                    }
-
-                    Console.WriteLine($"{cmd} timed out");
-                    return 1;
-                }
-            }
         }
     }
 }

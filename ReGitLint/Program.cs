@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ManyConsole;
 
-namespace ReCleanWrap {
+namespace ReGitLint {
     internal class Program {
         private static int Main(string[] args) {
             // locate any commands in the assembly (or use an IoC container, or whatever source)
