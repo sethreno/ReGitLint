@@ -6,7 +6,7 @@
   <PropertyGroup>
     <PackAsTool>true</PackAsTool>
     <PackageId>ReGitLint</PackageId>
-    <PackageVersion>2.0.5</PackageVersion>
+    <PackageVersion>2.0.6</PackageVersion>
     <ToolCommandName>regitlint</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

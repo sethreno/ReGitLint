@@ -183,20 +183,19 @@ namespace ReGitLint {
                     return files;
 
                 case FileMatch.Staged:
-                    gitArgs = "diff --name-only --diff-filter=ACM --cached";
+                    gitArgs = "diff --name-only --cached";
                     break;
 
                 case FileMatch.Modified:
-                    gitArgs = "diff --name-only --diff-filter=ACM";
+                    gitArgs = "diff --name-only";
                     break;
 
                 case FileMatch.Commits:
                     if (string.IsNullOrEmpty(commitA)) commitA = commitB;
                     if (string.IsNullOrEmpty(commitB)) commitB = commitA;
-                    if (commitA == commitB) commitB = null;
+                    if (commitA == commitB) commitA = $"{commitA}^";
 
-                    gitArgs = "diff --name-only --diff-filter=ACM"
-                        + $" {commitA} {commitB}";
+                    gitArgs = $"diff --name-only {commitA} {commitB}";
                     break;
 
                 default:
