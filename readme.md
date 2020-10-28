@@ -32,7 +32,7 @@ Install jb & regitlint
     dotnet tool install JetBrains.ReSharper.GlobalTools
     dotnet tool install ReGitLint
 
-Now to format the whole solution run
+Now to clean up the whole solution run
 
     dotnet regitlint
 
@@ -65,46 +65,50 @@ Or if you use jenkins you can just add this
     dotnet tool restore
     dotnet regitlint --jenkins
 
-This will only format the files changed betwen the commit that triggered the
+This will only format the files changed between the commit that triggered the
 build and the commit that triggered the last successful build. This saves a
 lot of time when compared to formatting all files on a large project.
 
 
 ## More Examples:
 
-* Format everything
+* Run cleanup on entire solution
 
     `dotnet regitlint`
 
-* Format all staged files
+* Format only, don't run a full code cleanup
+
+    `dotnet regitlint --format-only`
+
+* Clean up all staged files
 
     `dotnet regitlint -f staged`
 
-* Format all modified files
+* Clean up all modified files
 
     `dotnet regitlint -f modified`
 
-* Format only c# files
+* Clean up only c# files
 
     `dotnet regitlint -p "**/*.cs"`
 
-* Format only js files
+* Clean up only js files
 
     `dotnet regitlint -p "**/*.js"`
 
-* Format all files modified by commit 3796556
+* Clean up all files modified by commit 3796556
 
 	`dotnet regitlint -f commits -a 3796556`
 
-* Format all files modified between commit 6708090 and 3796556
+* Clean up all files modified between commit 6708090 and 3796556
 
 	`dotnet regitlint -f commits -a 6708090 -b 3796556`
 
-* Format staged files, return 1 if files change. Handy for git hooks.
+* Clean up staged files, return 1 if files change. Handy for git hooks.
 
     `dotnet regitlint -f staged --fail-on-diff`
 
-* Format files between commits and return 1 if files change. Handy for
+* Clean up files between commits and return 1 if files change. Handy for
   enforcing code formatting on build server.
 
     `dotnet regitlint -f commits -a 6708090 -b 3796556 --fail-on-diff`
