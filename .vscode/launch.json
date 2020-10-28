@@ -12,9 +12,10 @@
             "program": "${workspaceFolder}/ReGitLint/bin/Debug/netcoreapp3.1/ReGitLint.dll",
             "args": [
                 "-s ReGitLint.sln",
-                "-f Commits",
+                "-p **/*",
                 "-a 26ad8cc0c25619bfcc7c3e",
-                "-b 9a2ddad6770571b9de"
+                "-b 9a2ddad6770571b9de",
+                "--skip-tool-check"
             ],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",

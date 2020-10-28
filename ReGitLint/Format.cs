@@ -9,7 +9,7 @@ using ManyConsole;
 namespace ReCleanWrap {
     public class Format : ConsoleCommand {
         public enum FileMatch {
-            PatternOnly,
+            Pattern,
             Staged,
             Modified,
             Commits
@@ -18,9 +18,9 @@ namespace ReCleanWrap {
         public Format() {
             IsCommand(
                 "Format",
-                "Formats code using cleanupcode.exe and the current " +
-                ".editorconfig. Must be run from the root of the git repo " +
-                "containing files to format.");
+                "Formats code using cleanupcode and the current .editorconfig. "
+                + "Must be run from the root of the git repo containing files "
+                + "to format.");
             SkipsCommandSummaryBeforeRunning();
             HasRequiredOption(
                 "s|solution-file=",
@@ -28,20 +28,16 @@ namespace ReCleanWrap {
                 x => SolutionFile = x.Trim());
             HasOption(
                 "f|files-to-format=",
-                "Optional. Default is PatternOnly. Choices include:\n" +
-                " PatternOnly  Format files that match\n" +
-                "              file-pattern.\n" +
-                " Staged       Format staged files that\n" +
-                "              match file-pattern.\n" +
-                " Modified     Format modified files that\n" +
-                "              match file-pattern.\n" +
+                "Optional. Default is Pattern. Choices include:\n" +
+                " Pattern      Format files that match pattern.\n" +
+                " Staged       Format staged files.\n" +
+                " Modified     Format modified files.\n" +
                 " Commits      Format files modified\n" +
-                "              between commit-a and commit-b\n" +
-                "              that match file-pattern.",
+                "              between commit-a and commit-b.\n",
                 x => FilesToFormat =
                     (FileMatch)Enum.Parse(typeof(FileMatch), x, true));
             HasOption(
-                "p|file-pattern=",
+                "p|pattern=",
                 "Optional. Only files matching this pattern will be formatted. "
                 + "Default is **/*",
                 x => FilePattern = x);
@@ -62,15 +58,20 @@ namespace ReCleanWrap {
                 "Exit with non-zero return code if formatting produces a diff."
                 + " Useful for pre-commit hooks or build server stuff.",
                 x => FailOnDiff = x != null);
+            HasOption(
+                "skip-tool-check",
+                "Skip the check to see if the jb dotnet tool exists.",
+                x => SkipToolCheck = x != null);
         }
 
         public string SolutionFile { get; set; }
-        public FileMatch FilesToFormat { get; set; } = FileMatch.PatternOnly;
+        public FileMatch FilesToFormat { get; set; } = FileMatch.Pattern;
         public string FilePattern { get; set; }
         public string CommitA { get; set; }
         public string CommitB { get; set; }
         public bool FullCleanup { get; set; }
         public bool FailOnDiff { get; set; }
+        public bool SkipToolCheck { get; set; }
 
         public override int Run(string[] remainingArguments) {
             var files = GetFilesToFormat(
@@ -137,7 +138,7 @@ namespace ReCleanWrap {
             var files = new HashSet<string>();
             var gitArgs = "";
             switch (filesToFormat) {
-                case FileMatch.PatternOnly:
+                case FileMatch.Pattern:
                     files.Add(string.IsNullOrEmpty(pattern) ? "**/*" : pattern);
                     return files;
 
@@ -215,29 +216,32 @@ namespace ReCleanWrap {
             }
         }
 
-        private static int RunCleanupCode(
-            string profile,
-            string include,
-            string slnFile
-        ) {
-            const string flags =
-                "-dsl=GlobalAll -dsl=SolutionPersonal -dsl=ProjectPersonal";
-
+        private static bool DoesJbToolExist() {
             using (var process = new Process()) {
                 process.StartInfo.FileName = "dotnet";
                 process.StartInfo.Arguments = "tool run jb cleanupcode -v";
                 process.Start();
                 process.WaitForExit();
-                if (process.ExitCode == 1) {
-                    // todo add option to install automatically
-                    Console.WriteLine(@"
+                return (process.ExitCode == 0);
+            }
+        }
+
+        private int RunCleanupCode(
+            string profile,
+            string include,
+            string slnFile
+        ) {
+            if (!SkipToolCheck && !DoesJbToolExist()) {
+                Console.WriteLine(@"
 looks like jb dotnet tool isn't installed...
 you can install it by running the following command:
 
-	dotnet tool install JetBrains.ReSharper.GlobalTools");
-                    return 1;
-                }
+dotnet tool install JetBrains.ReSharper.GlobalTools");
+                return 1;
             }
+
+            const string flags =
+                "-dsl=GlobalAll -dsl=SolutionPersonal -dsl=ProjectPersonal";
 
             using (var process = new Process()) {
                 process.StartInfo.FileName = "dotnet";
