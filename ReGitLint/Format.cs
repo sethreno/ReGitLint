@@ -243,11 +243,40 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
             const string flags =
                 "-dsl=GlobalAll -dsl=SolutionPersonal -dsl=ProjectPersonal";
 
+            var args = $@"tool run jb cleanupcode ""{slnFile}"" {flags}"
+                + $@" --profile=""{profile}"" --include=""{include}""";
+
+            return RunCommand("dotnet", args,
+
+                // this can take a really long time on large code bases
+                cmdTimeout: TimeSpan.FromHours(24),
+
+                // but don't wait longer than 10 minutes for a single file
+                // to get formatted
+                outputTimeout: TimeSpan.FromMinutes(10)
+            );
+        }
+
+        private int RunCommand(
+            string cmd,
+            string args,
+            Action<string> outputCallback = null,
+            Action<string> errorCallback = null,
+            TimeSpan? cmdTimeout = null,
+            TimeSpan? outputTimeout = null
+        ) {
+            void WriteToConsole(string data) {
+                Console.WriteLine(data);
+            }
+
+            outputCallback = outputCallback ?? WriteToConsole;
+            errorCallback = errorCallback ?? WriteToConsole;
+            cmdTimeout = cmdTimeout ?? TimeSpan.FromMinutes(10);
+            outputTimeout = outputTimeout ?? TimeSpan.FromMinutes(1);
+
             using (var process = new Process()) {
-                process.StartInfo.FileName = "dotnet";
-                process.StartInfo.Arguments =
-                    $@"tool run jb cleanupcode ""{slnFile}"" {flags}"
-                    + $@" --profile=""{profile}"" --include=""{include}""";
+                process.StartInfo.FileName = cmd;
+                process.StartInfo.Arguments = args;
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
@@ -258,14 +287,14 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
                         if (e.Data == null) {
                             outputWaitHandle.Set();
                         } else {
-                            Console.WriteLine(e.Data);
+                            outputCallback(e.Data);
                         }
                     };
                     process.ErrorDataReceived += (sender, e) => {
                         if (e.Data == null) {
                             errorWaitHandle.Set();
                         } else {
-                            Console.WriteLine(e.Data);
+                            errorCallback(e.Data);
                         }
                     };
 
@@ -274,20 +303,16 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
                     process.BeginOutputReadLine();
                     process.BeginErrorReadLine();
 
-                    // this can take a really long time on large code bases
-                    var overallTimeout =
-                        (int)TimeSpan.FromHours(24).TotalMilliseconds;
+                    var cmdTimeoutMs = cmdTimeout.Value.TotalMilliseconds;
+                    var outTimeoutMs = outputTimeout.Value.TotalMilliseconds;
 
-                    // but don't wait longer than 10 minutes for a single file
-                    // to get formatted
-                    var outputTimeout =
-                        (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
+                    if (process.WaitForExit((int)cmdTimeoutMs) &&
+                        outputWaitHandle.WaitOne((int)outTimeoutMs) &&
+                        errorWaitHandle.WaitOne((int)outTimeoutMs)) {
+                        return process.ExitCode;
+                    }
 
-                    if (process.WaitForExit(overallTimeout) &&
-                        outputWaitHandle.WaitOne(outputTimeout) &&
-                        errorWaitHandle.WaitOne(outputTimeout)) return 0;
-
-                    Console.WriteLine("cleanupcode.exe timed out");
+                    Console.WriteLine($"{cmd} timed out");
                     return 1;
                 }
             }
