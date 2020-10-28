@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using ManyConsole;
@@ -16,13 +17,13 @@ namespace ReGitLint {
         public Format() {
             IsCommand(
                 "Format",
-                "Formats code using cleanupcode and the current .editorconfig. "
-                + "Must be run from the root of the git repo containing files "
-                + "to format.");
+                "Formats code using cleanupcode and the current .editorconfig."
+            );
             SkipsCommandSummaryBeforeRunning();
-            HasRequiredOption(
+            HasOption(
                 "s|solution-file=",
-                "Path to .sln or .csproj file.",
+                "Optional. Path to .sln file.\n" +
+                "By default ReGitLint will use the first sln file it finds.",
                 x => SolutionFile = x.Trim());
             HasOption(
                 "f|files-to-format=",
@@ -80,6 +81,13 @@ namespace ReGitLint {
                 return 0;
             }
 
+            if (string.IsNullOrEmpty(SolutionFile)) {
+                Console.WriteLine(
+                    "No sln file specified. Searching for one...");
+                SolutionFile = FindSlnFile(".");
+                Console.WriteLine($"Found {SolutionFile}. Using that.");
+            }
+
             var profile = FullCleanup ?
                 "Built-in: Full Cleanup" :
                 "Built-in: Reformat Code";
@@ -125,6 +133,16 @@ namespace ReGitLint {
             }
 
             return 0;
+        }
+
+        private static string FindSlnFile(string dir) {
+            var files =
+                Directory.GetFiles(dir, "*.sln", SearchOption.AllDirectories);
+            if (files.Any()) return files.First();
+            var parentDir = Directory.GetParent(dir);
+            if (parentDir == null)
+                throw new Exception("could not find sln file");
+            return FindSlnFile(parentDir.FullName);
         }
 
         private static HashSet<string> GetFilesToFormat(
