@@ -23,11 +23,19 @@ favorite editor. There are many formatting options supported... Here's
 
 ## Quick Start
 
+If you don't already have a tool manifest in your project
+
+    dotnet new tool-manifest
+
+Install jb & regitlint
+
+    dotnet tool install JetBrains.ReSharper.GlobalTools
+    dotnet tool install ReGitLint
+
 Add the following to .git/hooks/pre-commit
 
     #!/bin/sh
-    nuget install regitlint -Version 1.5.2 -OutputDirectory packages
-    packages/ReGitLint.1.5.2/tools/ReGitLint.exe -s Example.sln -f Staged -d
+    dotnet regitlint -f staged --fail-on-diff
 
 ReGitLint will run
 [CleanupCode](https://www.jetbrains.com/help/resharper/CleanupCode.html) to
@@ -44,40 +52,40 @@ message like:
 
 * Format everything
 
-    `ReGitLint.exe format -s .\Example.sln`
+    `dotnet regitlint`
 
 * Format all staged files
 
-    `ReGitLint.exe format -s .\Example.sln -f Staged`
+    `dotnet regitlint -f staged`
 
-* Format modified c# files
+* Format all c# files
 
-    `ReGitLint.exe format -s .\Example.sln -f Modified -p "*.cs"`
+    `dotnet regitlint -p "**/*.cs"`
 
 * Format all files modified by commit 3796556
 
-	`ReGitLint.exe format -s .\Example.sln -f Commits -a 3796556`
+	`dotnet regitlint -f commits -a 3796556`
 
 * Format all files modified between commit 6708090 and 3796556
 
-    `ReGitLint.exe format -s .\Example.sln -f Commits -a 6708090 -b 3796556`
+	`dotnet regitlint -f commits -a 6708090 -b 3796556`
 
 * Format staged files, return 1 if files change. Handy for git hooks.
 
-    `ReGitLint.exe format -s .\Example.sln -f Staged -d`
+    `dotnet regitlint -f staged --fail-on-diff`
 
 * Format files between commits and return 1 if files change. Handy for
   enforcing code formatting on build server.
 
-    `ReGitLint.exe format -s .\Example.sln -f Commits -a 6708090 -b 3796556 -d`
+    `dotnet regitlint -f commits -a 6708090 -b 3796556 --fail-on-diff`
 
 * Enforce code formatting on jenkins
 
-    `ReGitLint.exe format -s .\Example.sln -f -d Commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT`
+    `dotnet regitlint -f -d commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT`
 
 
 ----
 
 If you've found ReGitLint helpful you can
 [buy me a coffee](https://www.buymeacoffee.com/sethreno) to say thanks.
-Cheers!
+Happy linting!

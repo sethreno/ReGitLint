@@ -14,7 +14,7 @@
                 "--skip-tool-check",
                 "-f staged"
             ],
-            "cwd": "${workspaceFolder}/ReGitLint/testFolder",
+            "cwd": "${workspaceFolder}/ReGitLint",
             "console": "internalConsole",
             "stopAtEntry": false
         },

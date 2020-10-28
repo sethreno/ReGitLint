@@ -6,7 +6,7 @@ using System.Text;
 using ManyConsole;
 
 namespace ReGitLint {
-    public class Format : ConsoleCommand {
+    public class Cleanup : ConsoleCommand {
         public enum FileMatch {
             Pattern,
             Staged,
@@ -14,10 +14,10 @@ namespace ReGitLint {
             Commits
         }
 
-        public Format() {
+        public Cleanup() {
             IsCommand(
-                "Format",
-                "Formats code using cleanupcode and the current .editorconfig."
+                "Cleanup",
+                "Runs cleanupcode on the current project."
             );
             SkipsCommandSummaryBeforeRunning();
             HasOption(
@@ -49,11 +49,11 @@ namespace ReGitLint {
                 "Partial or full sha hash for commit B ",
                 x => CommitB = x);
             HasOption(
-                "c|full-cleanup",
-                "Run full cleanup in addition to formatting",
-                x => FullCleanup = x != null);
+                "format-only",
+                "Only format files instead of running full cleanup.",
+                x => FormatOnly = x != null);
             HasOption(
-                "d|fail-on-diff",
+                "fail-on-diff",
                 "Exit with non-zero return code if formatting produces a diff."
                 + " Useful for pre-commit hooks or build server stuff.",
                 x => FailOnDiff = x != null);
@@ -68,7 +68,7 @@ namespace ReGitLint {
         public string FilePattern { get; set; }
         public string CommitA { get; set; }
         public string CommitB { get; set; }
-        public bool FullCleanup { get; set; }
+        public bool FormatOnly { get; set; }
         public bool FailOnDiff { get; set; }
         public bool SkipToolCheck { get; set; }
 
@@ -88,9 +88,9 @@ namespace ReGitLint {
                 Console.WriteLine($"Found {SolutionFile}. Using that.");
             }
 
-            var profile = FullCleanup ?
-                "Built-in: Full Cleanup" :
-                "Built-in: Reformat Code";
+            var profile = FormatOnly ?
+                "Built-in: Reformat Code":
+                "Built-in: Full Cleanup";
 
             // windows doesn't allow args > ~8100 so call cleanupcode in batches
             var remain = new HashSet<string>(files);
