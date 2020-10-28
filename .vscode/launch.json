@@ -12,7 +12,8 @@
             "program": "${workspaceFolder}/ReGitLint/bin/Debug/netcoreapp3.1/ReGitLint.dll",
             "args": [
                 "--skip-tool-check",
-                "-f staged"
+                "-f staged",
+                "--fail-on-diff"
             ],
             "cwd": "${workspaceFolder}/ReGitLint",
             "console": "internalConsole",

@@ -89,7 +89,7 @@ namespace ReGitLint {
             }
 
             var profile = FormatOnly ?
-                "Built-in: Reformat Code":
+                "Built-in: Reformat Code" :
                 "Built-in: Full Cleanup";
 
             // windows doesn't allow args > ~8100 so call cleanupcode in batches
@@ -110,7 +110,7 @@ namespace ReGitLint {
 
             if (FailOnDiff) {
                 var diffFiles =
-                    GetFileListFromGit("git diff --name-only --diff-filter=ACM")
+                    GetFileListFromGit("diff --name-only --diff-filter=ACM")
                         .ToList();
 
                 if (diffFiles.Any()) {
@@ -184,7 +184,13 @@ namespace ReGitLint {
 
         private static List<string> GetFileListFromGit(string gitArgs) {
             var files = new HashSet<string>();
-            CmdUtil.Run("git", gitArgs, data => files.Add(data.Trim()));
+            var exitCode = CmdUtil.Run("git", gitArgs,
+                data => files.Add(data.Trim()));
+
+            if (exitCode != 0) {
+                throw new Exception($"Failed to run git command {gitArgs}");
+            }
+
             return files.ToList();
         }
 

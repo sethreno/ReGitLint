@@ -5,21 +5,21 @@ using System.Threading;
 namespace ReGitLint {
     public static class CmdUtil {
         /// <summary>
-        /// Runs the specified command and returns it's exit code.
+        ///     Runs the specified command and returns it's exit code.
         /// </summary>
         /// <param name="cmd">the cmd to run</param>
         /// <param name="args">args to pass the cmd</param>
         /// <param name="outputCallback">
-        /// Optional callback for std out. Defaults to Console.WriteLine
+        ///     Optional callback for std out. Defaults to Console.WriteLine
         /// </param>
         /// <param name="errorCallback">
-        /// Optional callback for error out. Defaults to Console.WriteLine
+        ///     Optional callback for error out. Defaults to Console.WriteLine
         /// </param>
         /// <param name="cmdTimeout">
-        /// Optional timeout for the cmd. Defaults to 10 minutes.
+        ///     Optional timeout for the cmd. Defaults to 10 minutes.
         /// </param>
         /// <param name="outputTimeout">
-        /// Optional timeout for the output. Defaults to 10 minutes.
+        ///     Optional timeout for the output. Defaults to 10 minutes.
         /// </param>
         /// <returns>The exit code of the cmd</returns>
         public static int Run(
