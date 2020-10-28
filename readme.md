@@ -32,6 +32,13 @@ Install jb & regitlint
     dotnet tool install JetBrains.ReSharper.GlobalTools
     dotnet tool install ReGitLint
 
+Now to format the whole solution run
+
+    `dotnet regitlint`
+
+To keep everything formatted you can add a pre-commit hook and build step.
+Don't panic!!! ReGitLint has options to format only what's changed so it's fast!
+
 Add the following to .git/hooks/pre-commit
 
     #!/bin/sh
@@ -50,10 +57,12 @@ message like:
 
 To enforce code formatting on the build server add this to your build script
 
+    `dotnet tool restore`
     `dotnet regitlint -f commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT --fail-on-diff --print-diff`
 
 Or if you use jenkins you can just add this
 
+    `dotnet tool restore`
     `dotnet regitlint --jenkins`
 
 This will only format the files changed betwen the commit that triggered the
@@ -71,9 +80,17 @@ lot of time when compared to formatting all files on a large project.
 
     `dotnet regitlint -f staged`
 
-* Format all c# files
+* Format all modified files
+
+    `dotnet regitlint -f modified`
+
+* Format only c# files
 
     `dotnet regitlint -p "**/*.cs"`
+
+* Format only js files
+
+    `dotnet regitlint -p "**/*.js"`
 
 * Format all files modified by commit 3796556
 
