@@ -125,6 +125,9 @@ lot of time when compared to formatting all files on a large project.
 
     `dotnet regitlint -f commits -a $env.GIT_PREVIOUS_SUCCESSFUL_COMMIT -b $env.GIT_COMMIT --fail-on-diff --print-diff`
 
+* Pass options through to jb cleanupcode
+
+    `dotnet regitlint --jb --toolset=16.0 --jb --exclude="**/*.html"`
 
 ----
 
