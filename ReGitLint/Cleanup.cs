@@ -262,7 +262,7 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
             }
 
             var args = $@"tool run jb cleanupcode ""{slnFile}"" "
-                + @"--include=""{include}"""
+                + $@"--include=""{include}"" "
                 + string.Join(" ", jbArgs);
 
             return CmdUtil.Run("dotnet", args,
