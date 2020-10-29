@@ -11,8 +11,8 @@
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/ReGitLint/bin/Debug/netcoreapp3.1/ReGitLint.dll",
             "args": [
-                "-f staged",
-                "--skip-tool-check"
+                "--jb", "-d",
+                "--jb", "--toolset=12.0",
             ],
             "env": {"GIT_COMMIT":"73984afc4b213", "GIT_PREVIOUS_SUCCESSFUL_COMMIT":"75d034265fb9"},
             "cwd": "${workspaceFolder}/ReGitLint",

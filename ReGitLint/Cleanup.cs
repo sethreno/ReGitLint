@@ -49,6 +49,13 @@ namespace ReGitLint {
                 "Partial or full sha hash for commit B ",
                 x => CommitB = x);
             HasOption(
+                "jb=",
+                "Arg passsed through to jb cleanupcode. " +
+                "Allows multiple. e.g. --jb -d --jb --toolset=12.0 " +
+                "see https://www.jetbrains.com/help/resharper/CleanupCode.html#command-line-parameters " +
+                "for a full list of options.",
+                x => JbArgs.Add(x));
+            HasOption(
                 "format-only",
                 "Only format files instead of running full cleanup.",
                 x => FormatOnly = x != null);
@@ -76,6 +83,7 @@ namespace ReGitLint {
         public string FilePattern { get; set; }
         public string CommitA { get; set; }
         public string CommitB { get; set; }
+        public List<string> JbArgs { get; set; } = new List<string>();
         public bool FormatOnly { get; set; }
         public bool FailOnDiff { get; set; }
         public bool PrintDiff { get; set; }
@@ -100,10 +108,6 @@ namespace ReGitLint {
                 Console.WriteLine($"Found {SolutionFile}. Using that.");
             }
 
-            var profile = FormatOnly ?
-                "Built-in: Reformat Code" :
-                "Built-in: Full Cleanup";
-
             // windows doesn't allow args > ~8100 so call cleanupcode in batches
             var remain = new HashSet<string>(files);
             while (remain.Any()) {
@@ -115,7 +119,7 @@ namespace ReGitLint {
                 }
 
                 var returnCode = RunCleanupCode(
-                    profile, include.ToString(), SolutionFile);
+                    include.ToString(), SolutionFile);
 
                 if (returnCode != 0) return returnCode;
             }
@@ -227,7 +231,6 @@ namespace ReGitLint {
         }
 
         private int RunCleanupCode(
-            string profile,
             string include,
             string slnFile
         ) {
@@ -240,11 +243,27 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
                 return 1;
             }
 
-            const string flags =
-                "-dsl=GlobalAll -dsl=SolutionPersonal -dsl=ProjectPersonal";
+            var jbArgs = new HashSet<string>(JbArgs);
 
-            var args = $@"tool run jb cleanupcode ""{slnFile}"" {flags}"
-                + $@" --profile=""{profile}"" --include=""{include}""";
+            if (!jbArgs.Contains("--profile")) {
+                if (FormatOnly) {
+                    jbArgs.Add(@"--profile=""Built-in: Reformat Code""");
+                } else {
+                    jbArgs.Add(@"--profile=""Built-in: Full Cleanup""");
+                }
+            }
+
+            if (!jbArgs.Contains("-dsl")
+                && !jbArgs.Contains("--disable-settings-layers")) {
+                // ignore settings that might conflict with .editorconfig
+                jbArgs.Add("-dsl=GlobalAll");
+                jbArgs.Add("-dsl=SolutionPersonal");
+                jbArgs.Add("-dsl=ProjectPersonal");
+            }
+
+            var args = $@"tool run jb cleanupcode ""{slnFile}"" "
+                + @"--include=""{include}"""
+                + string.Join(" ", jbArgs);
 
             return CmdUtil.Run("dotnet", args,
 
