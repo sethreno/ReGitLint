@@ -34,8 +34,12 @@ namespace ReGitLint {
                 Console.WriteLine(data);
             }
 
+            void WriteErrorToConsole(string data) {
+                Console.WriteLine("error:" + data);
+            }
+
             outputCallback = outputCallback ?? WriteToConsole;
-            errorCallback = errorCallback ?? WriteToConsole;
+            errorCallback = errorCallback ?? WriteErrorToConsole;
             cmdTimeout = cmdTimeout ?? TimeSpan.FromMinutes(10);
             outputTimeout = outputTimeout ?? TimeSpan.FromMinutes(10);
 

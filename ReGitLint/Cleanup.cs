@@ -282,7 +282,18 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
 
             if (PrintCommand) Console.WriteLine($"dotnet {args}");
 
-            return CmdUtil.Run("dotnet", args,
+            // jb returns non zero when there's nothing to format
+            // capture that so we can return zero
+            var nothingToFormat = false;
+
+            void ErrorCallback(string data) {
+                if (data.Contains("No items were found to cleanup"))
+                    nothingToFormat = true;
+                Console.WriteLine($"error: {data}");
+            }
+
+            var returnCode = CmdUtil.Run("dotnet", args,
+                errorCallback: ErrorCallback,
 
                 // this can take a really long time on large code bases
                 cmdTimeout: TimeSpan.FromHours(24),
@@ -291,6 +302,9 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
                 // to get formatted
                 outputTimeout: TimeSpan.FromMinutes(10)
             );
+
+            if (nothingToFormat) return 0;
+            return returnCode;
         }
     }
 }
