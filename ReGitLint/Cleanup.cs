@@ -113,13 +113,23 @@ namespace ReGitLint {
                 Console.WriteLine($"Found {SolutionFile}. Using that.");
             }
 
+            var solutionDir = Path.GetDirectoryName(SolutionFile);
+            if (solutionDir.StartsWith(".\\") || solutionDir.StartsWith("./"))
+                solutionDir = solutionDir.Substring(2);
+
             // windows doesn't allow args > ~8100 so call cleanupcode in batches
             var remain = new HashSet<string>(files);
             while (remain.Any()) {
                 var include = new StringBuilder();
                 foreach (var file in remain.ToArray()) {
                     if (include.Length + file.Length > 7000) break;
-                    include.Append($";{file}");
+
+                    // jb codecleanup requires file paths relative to the sln
+                    var jbFilePath = file;
+                    if (file.StartsWith(solutionDir))
+                        jbFilePath = file.Substring(solutionDir.Length);
+
+                    include.Append($";{jbFilePath}");
                     remain.Remove(file);
                 }
 
