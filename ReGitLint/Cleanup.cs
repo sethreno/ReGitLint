@@ -75,7 +75,11 @@ namespace ReGitLint {
             HasOption(
                 "print-diff",
                 "Prints the full diff on fail-on-diff",
-                x => FailOnDiff = x != null);
+                x => PrintDiff = x != null);
+            HasOption(
+                "print-command",
+                "Prints the jb command before running it",
+                x => PrintCommand = x != null);
         }
 
         public string SolutionFile { get; set; }
@@ -89,6 +93,7 @@ namespace ReGitLint {
         public bool PrintDiff { get; set; }
         public bool SkipToolCheck { get; set; }
         public bool Jenkins { get; set; }
+        public bool PrintCommand { get; set; }
 
         public override int Run(string[] remainingArguments) {
             if (Jenkins) SetJenkinsOptions();
@@ -264,6 +269,8 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
             var args = $@"tool run jb cleanupcode ""{slnFile}"" "
                 + $@"--include=""{include}"" "
                 + string.Join(" ", jbArgs);
+
+            if (PrintCommand) Console.WriteLine($"dotnet {args}");
 
             return CmdUtil.Run("dotnet", args,
 

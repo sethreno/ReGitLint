@@ -11,11 +11,13 @@
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/ReGitLint/bin/Debug/netcoreapp3.1/ReGitLint.dll",
             "args": [
-                "--jb", "-d",
-                "--jb", "--toolset=12.0",
+                "-f", "staged",
+                "--jb", "--dotnetcoresdk=5.0.100",
+                "--skip-tool-check",
+                "--print-command",
             ],
             "env": {"GIT_COMMIT":"73984afc4b213", "GIT_PREVIOUS_SUCCESSFUL_COMMIT":"75d034265fb9"},
-            "cwd": "${workspaceFolder}/ReGitLint",
+            "cwd": "C:/users/sreno/src/food",
             "console": "internalConsole",
             "stopAtEntry": false
         },
