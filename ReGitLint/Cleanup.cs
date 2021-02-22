@@ -80,6 +80,10 @@ namespace ReGitLint {
                 "print-command",
                 "Prints the jb command before running it",
                 x => PrintCommand = x != null);
+            HasOption(
+                "prettier",
+                "Exclude file types supported by prettier",
+                x => UsePrettier = x != null);
         }
 
         public string SolutionFile { get; set; }
@@ -94,6 +98,7 @@ namespace ReGitLint {
         public bool SkipToolCheck { get; set; }
         public bool Jenkins { get; set; }
         public bool PrintCommand { get; set; }
+        public bool UsePrettier { get; set; }
 
         public override int Run(string[] remainingArguments) {
             if (Jenkins) SetJenkinsOptions();
@@ -276,8 +281,20 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
                 jbArgs.Add("-dsl=ProjectPersonal");
             }
 
+            var exclude = "";
+            if (UsePrettier) {
+                var extensions = "html,js,ts,jsx,css,json";
+                exclude = @"--exclude=""";
+
+                foreach (var extension in extensions.Split(",")) {
+                    exclude += $"**/*.{extension};";
+                }
+
+                exclude += @"""";
+            }
+
             var args = $@"tool run jb cleanupcode ""{slnFile}"" "
-                + $@"--include=""{include}"" "
+                + $@"{exclude} --include=""{include}"" "
                 + string.Join(" ", jbArgs);
 
             if (PrintCommand) Console.WriteLine($"dotnet {args}");
