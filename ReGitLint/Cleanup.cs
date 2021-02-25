@@ -283,10 +283,13 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
 
             var exclude = "";
             if (UsePrettier) {
-                var extensions = "html,js,ts,jsx,css,json";
+                var extensions = new[] {
+                    "js", "jsx", "json", "html", "ts", "tsx", "css", "less",
+                    "scss", "md", "yaml"
+                };
                 exclude = @"--exclude=""";
 
-                foreach (var extension in extensions.Split(",")) {
+                foreach (var extension in extensions) {
                     exclude += $"**/*.{extension};";
                 }
 
