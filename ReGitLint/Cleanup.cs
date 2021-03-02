@@ -73,6 +73,12 @@ namespace ReGitLint {
                 "Format files changed between recent commits and fail on diff",
                 x => Jenkins = x != null);
             HasOption(
+                "assume-head",
+                "If the commit specified doesnt exist HEAD is used instead."
+                + " This was added to work around a bug when building pull"
+                + " requests via jenkins.",
+                x => AssumeHead = x != null);
+            HasOption(
                 "print-diff",
                 "Prints the full diff on fail-on-diff",
                 x => PrintDiff = x != null);
@@ -99,9 +105,22 @@ namespace ReGitLint {
         public bool Jenkins { get; set; }
         public bool PrintCommand { get; set; }
         public bool UsePrettier { get; set; }
+        public bool AssumeHead { get; set; }
 
         public override int Run(string[] remainingArguments) {
             if (Jenkins) SetJenkinsOptions();
+
+            if (AssumeHead && !string.IsNullOrEmpty(CommitA)
+                && !DoesCommitExist(CommitA)) {
+                CommitA = "HEAD";
+                Console.WriteLine($"commit {CommitA} not found, using HEAD");
+            }
+
+            if (AssumeHead && !string.IsNullOrEmpty(CommitB)
+                && !DoesCommitExist(CommitB)) {
+                CommitB = "HEAD";
+                Console.WriteLine($"commit {CommitB} not found, using HEAD");
+            }
 
             var files = GetFilesToFormat(
                 FilePattern, FilesToFormat, CommitA, CommitB);
@@ -187,6 +206,7 @@ namespace ReGitLint {
         private void SetJenkinsOptions() {
             FailOnDiff = true;
             PrintDiff = true;
+            AssumeHead = true;
             FilesToFormat = FileMatch.Commits;
             CommitA = Environment.GetEnvironmentVariable(
                 "GIT_PREVIOUS_SUCCESSFUL_COMMIT");
@@ -231,6 +251,22 @@ namespace ReGitLint {
                 .ForEach(x => files.Add(x));
 
             return files;
+        }
+
+        private static bool DoesCommitExist(string sha) {
+            var args = $"cat-file -t {sha}";
+            var exists = false;
+
+            void OutputCallback(string data) {
+                if (data.StartsWith("commit")) exists = true;
+                Console.WriteLine(data);
+            }
+
+            var returnCode = CmdUtil.Run("git", args,
+                OutputCallback
+            );
+
+            return exists;
         }
 
         private static List<string> GetFileListFromGit(string gitArgs) {
