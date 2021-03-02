@@ -179,9 +179,10 @@ namespace ReGitLint {
                         Console.WriteLine();
                         Console.WriteLine("!!!! Process Aborted !!!!");
                         Console.WriteLine(
-                            "Code formatter changed the following files:");
+                            "The following files do not match .editorconfig:");
                         diffFiles.ForEach(
                             x => { Console.WriteLine($" * {x}"); });
+                        PrintFixCommand();
 
                         if (PrintDiff) CmdUtil.Run("git", "diff");
 
@@ -191,6 +192,20 @@ namespace ReGitLint {
             }
 
             return 0;
+        }
+
+        private void PrintFixCommand() {
+            if (FilesToFormat != FileMatch.Commits) return;
+
+            var args = string.Join(
+                " ", Environment.GetCommandLineArgs().Skip(1));
+            var cmd = $"dotnet regitlint {args}";
+
+            Console.WriteLine();
+            Console.WriteLine("Run the following command to fix style issues:");
+            Console.WriteLine();
+            Console.WriteLine($"    {cmd}");
+            Console.WriteLine();
         }
 
         private static string FindSlnFile(string dir) {
