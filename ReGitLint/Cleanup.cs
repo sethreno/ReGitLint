@@ -34,11 +34,11 @@ namespace ReGitLint {
                 " Commits      Format files modified\n" +
                 "              between commit-a and commit-b.\n",
                 x => FilesToFormat =
-                    (FileMatch)Enum.Parse(typeof(FileMatch), x, true));
+                (FileMatch)Enum.Parse(typeof(FileMatch), x, true));
             HasOption(
                 "p|pattern=",
-                "Optional. Only files matching this pattern will be formatted. "
-                + "Default is **/*",
+                "Optional. Only files matching this pattern will be formatted. " +
+                "Default is **/*",
                 x => FilePattern = x);
             HasOption(
                 "a|commit-a=",
@@ -61,8 +61,8 @@ namespace ReGitLint {
                 x => FormatOnly = x != null);
             HasOption(
                 "fail-on-diff",
-                "Exit with non-zero return code if formatting produces a diff."
-                + " Useful for pre-commit hooks or build server stuff.",
+                "Exit with non-zero return code if formatting produces a diff." +
+                " Useful for pre-commit hooks or build server stuff.",
                 x => FailOnDiff = x != null);
             HasOption(
                 "skip-tool-check",
@@ -74,9 +74,9 @@ namespace ReGitLint {
                 x => Jenkins = x != null);
             HasOption(
                 "assume-head",
-                "If the commit specified doesnt exist HEAD is used instead."
-                + " This was added to work around a bug when building pull"
-                + " requests via jenkins.",
+                "If the commit specified doesnt exist HEAD is used instead." +
+                " This was added to work around a bug when building pull" +
+                " requests via jenkins.",
                 x => AssumeHead = x != null);
             HasOption(
                 "print-diff",
@@ -108,16 +108,16 @@ namespace ReGitLint {
         public bool AssumeHead { get; set; }
 
         public override int Run(string[] remainingArguments) {
-            if (Jenkins) SetJenkinsOptions();
+            if (Jenkins)SetJenkinsOptions();
 
-            if (AssumeHead && !string.IsNullOrEmpty(CommitA)
-                && !DoesCommitExist(CommitA)) {
+            if (AssumeHead && !string.IsNullOrEmpty(CommitA) &&
+                !DoesCommitExist(CommitA)) {
                 CommitA = "HEAD";
                 Console.WriteLine($"commit {CommitA} not found, using HEAD");
             }
 
-            if (AssumeHead && !string.IsNullOrEmpty(CommitB)
-                && !DoesCommitExist(CommitB)) {
+            if (AssumeHead && !string.IsNullOrEmpty(CommitB) &&
+                !DoesCommitExist(CommitB)) {
                 CommitB = "HEAD";
                 Console.WriteLine($"commit {CommitB} not found, using HEAD");
             }
@@ -146,7 +146,7 @@ namespace ReGitLint {
             while (remain.Any()) {
                 var include = new StringBuilder();
                 foreach (var file in remain.ToArray()) {
-                    if (include.Length + file.Length > 7000) break;
+                    if (include.Length + file.Length > 7000)break;
 
                     // jb codecleanup requires file paths relative to the sln
                     var jbFilePath = file;
@@ -160,13 +160,13 @@ namespace ReGitLint {
                 var returnCode = RunCleanupCode(
                     include.ToString(), SolutionFile);
 
-                if (returnCode != 0) return returnCode;
+                if (returnCode != 0)return returnCode;
             }
 
             if (FailOnDiff) {
                 var diffFiles =
                     GetFileListFromGit("diff --name-only --diff-filter=ACM")
-                        .ToList();
+                    .ToList();
 
                 if (diffFiles.Any()) {
                     if (FilesToFormat == FileMatch.Staged ||
@@ -184,7 +184,7 @@ namespace ReGitLint {
                             x => { Console.WriteLine($" * {x}"); });
                         PrintFixCommand();
 
-                        if (PrintDiff) CmdUtil.Run("git", "diff");
+                        if (PrintDiff)CmdUtil.Run("git", "diff");
 
                         return 1;
                     }
@@ -195,7 +195,7 @@ namespace ReGitLint {
         }
 
         private void PrintFixCommand() {
-            if (FilesToFormat != FileMatch.Commits) return;
+            if (FilesToFormat != FileMatch.Commits)return;
 
             var args = string.Join(
                 " ", Environment.GetCommandLineArgs().Skip(1));
@@ -211,7 +211,7 @@ namespace ReGitLint {
         private static string FindSlnFile(string dir) {
             var files =
                 Directory.GetFiles(dir, "*.sln", SearchOption.AllDirectories);
-            if (files.Any()) return files.First();
+            if (files.Any())return files.First();
             var parentDir = Directory.GetParent(dir);
             if (parentDir == null)
                 throw new Exception("could not find sln file");
@@ -250,9 +250,9 @@ namespace ReGitLint {
                     break;
 
                 case FileMatch.Commits:
-                    if (string.IsNullOrEmpty(commitA)) commitA = commitB;
-                    if (string.IsNullOrEmpty(commitB)) commitB = commitA;
-                    if (commitA == commitB) commitA = $"{commitA}^";
+                    if (string.IsNullOrEmpty(commitA))commitA = commitB;
+                    if (string.IsNullOrEmpty(commitB))commitB = commitA;
+                    if (commitA == commitB)commitA = $"{commitA}^";
 
                     gitArgs = $"diff --name-only {commitA} {commitB}";
                     break;
@@ -273,7 +273,7 @@ namespace ReGitLint {
             var exists = false;
 
             void OutputCallback(string data) {
-                if (data.StartsWith("commit")) exists = true;
+                if (data.StartsWith("commit"))exists = true;
                 Console.WriteLine(data);
             }
 
@@ -297,7 +297,7 @@ namespace ReGitLint {
         }
 
         private static bool DoesJbToolExist() {
-            var exitCode = CmdUtil.Run("dotnet", "tool run jb cleanupcode -v");
+            var exitCode = CmdUtil.Run("dotnet", "jb cleanupcode -v");
             return exitCode == 0;
         }
 
@@ -319,13 +319,14 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
             if (!jbArgs.Contains("--profile")) {
                 if (FormatOnly) {
                     jbArgs.Add(@"--profile=""Built-in: Reformat Code""");
-                } else {
+                }
+                else {
                     jbArgs.Add(@"--profile=""Built-in: Full Cleanup""");
                 }
             }
 
-            if (!jbArgs.Contains("-dsl")
-                && !jbArgs.Contains("--disable-settings-layers")) {
+            if (!jbArgs.Contains("-dsl") &&
+                !jbArgs.Contains("--disable-settings-layers")) {
                 // ignore settings that might conflict with .editorconfig
                 jbArgs.Add("-dsl=GlobalAll");
                 jbArgs.Add("-dsl=SolutionPersonal");
@@ -334,9 +335,18 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
 
             var exclude = "";
             if (UsePrettier) {
-                var extensions = new[] {
-                    "js", "jsx", "json", "html", "ts", "tsx", "css", "less",
-                    "scss", "md", "yaml"
+                var extensions = new [] {
+                    "js",
+                    "jsx",
+                    "json",
+                    "html",
+                    "ts",
+                    "tsx",
+                    "css",
+                    "less",
+                    "scss",
+                    "md",
+                    "yaml"
                 };
                 exclude = @"--exclude=""";
 
@@ -347,11 +357,11 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
                 exclude += @"""";
             }
 
-            var args = $@"tool run jb cleanupcode ""{slnFile}"" "
-                + $@"{exclude} --include=""{include}"" "
-                + string.Join(" ", jbArgs);
+            var args = $@"jb cleanupcode ""{slnFile}"" " +
+                $@"{exclude} --include=""{include}"" " +
+                string.Join(" ", jbArgs);
 
-            if (PrintCommand) Console.WriteLine($"dotnet {args}");
+            if (PrintCommand)Console.WriteLine($"dotnet {args}");
 
             // jb returns non zero when there's nothing to format
             // capture that so we can return zero
@@ -364,17 +374,17 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
             }
 
             var returnCode = CmdUtil.Run("dotnet", args,
-                errorCallback: ErrorCallback,
+                errorCallback : ErrorCallback,
 
                 // this can take a really long time on large code bases
-                cmdTimeout: TimeSpan.FromHours(24),
+                cmdTimeout : TimeSpan.FromHours(24),
 
                 // but don't wait longer than 10 minutes for a single file
                 // to get formatted
-                outputTimeout: TimeSpan.FromMinutes(10)
+                outputTimeout : TimeSpan.FromMinutes(10)
             );
 
-            if (nothingToFormat) return 0;
+            if (nothingToFormat)return 0;
             return returnCode;
         }
     }
