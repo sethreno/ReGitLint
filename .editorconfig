@@ -11,6 +11,7 @@ end_of_line=lf
 insert_final_newline=true
 max_line_length=80
 
+
 # Microsoft .NET properties
 csharp_new_line_before_catch=false
 csharp_new_line_before_else=false
@@ -32,6 +33,8 @@ dotnet_style_require_accessibility_modifiers=for_non_interface_members:hint
 
 # ReSharper properties
 resharper_align_multiline_binary_expressions_chain=false
+resharper_wrap_verbatim_interpolated_strings=chop_if_long;
+resharper_wrap_before_binary_opsign=false;
 resharper_allow_comment_after_lbrace=true
 resharper_braces_for_dowhile=required_for_multiline
 resharper_braces_for_fixed=required_for_multiline
