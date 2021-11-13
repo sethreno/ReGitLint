@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using ManyConsole;
+﻿using ManyConsole;
 
-namespace ReGitLint {
-    internal class Program {
-        private static int Main(string[] args) {
-            // locate any commands in the assembly (or use an IoC container, or whatever source)
-            var commands = GetCommands();
+namespace ReGitLint;
 
-            // run the command for the console input
-            return ConsoleCommandDispatcher.DispatchCommand(commands, args,
-                Console.Out);
-        }
+internal class Program {
+    private static int Main(string[] args) {
+        // locate any commands in the assembly
+        var commands = GetCommands();
 
-        private static IEnumerable<ConsoleCommand> GetCommands() {
-            return ConsoleCommandDispatcher.FindCommandsInSameAssemblyAs(
-                typeof(Program));
-        }
+        // run the command for the console input
+        return ConsoleCommandDispatcher.DispatchCommand(commands, args,
+            Console.Out);
+    }
+
+    private static IEnumerable<ConsoleCommand> GetCommands() {
+        return ConsoleCommandDispatcher.FindCommandsInSameAssemblyAs(
+            typeof(Program));
     }
 }
