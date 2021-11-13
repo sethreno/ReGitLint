@@ -325,6 +325,7 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
             && !jbArgs.Contains("--disable-settings-layers")) {
             // ignore settings that might conflict with .editorconfig
             jbArgs.Add("-dsl=GlobalAll");
+            jbArgs.Add("-dsl=GlobalPerProduct");
             jbArgs.Add("-dsl=SolutionPersonal");
             jbArgs.Add("-dsl=ProjectPersonal");
         }
