@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup>
     <PackAsTool>true</PackAsTool>
     <PackageId>ReGitLint</PackageId>
-    <PackageVersion>2.1.4</PackageVersion>
+    <PackageVersion>6.0.0</PackageVersion>
     <ToolCommandName>regitlint</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
