@@ -80,6 +80,10 @@ public class Cleanup : ConsoleCommand {
             "Prints the full diff on fail-on-diff",
             x => PrintDiff = x != null);
         HasOption(
+            "print-fix",
+            "Prints the regitlint command to run to fix formatting",
+            x => PrintFix = x != null);
+        HasOption(
             "print-command",
             "Prints the jb command before running it",
             x => PrintCommand = x != null);
@@ -98,6 +102,7 @@ public class Cleanup : ConsoleCommand {
     public bool FormatOnly { get; set; }
     public bool FailOnDiff { get; set; }
     public bool PrintDiff { get; set; }
+    public bool PrintFix { get; set; }
     public bool SkipToolCheck { get; set; }
     public bool Jenkins { get; set; }
     public bool PrintCommand { get; set; }
@@ -184,9 +189,10 @@ public class Cleanup : ConsoleCommand {
                         "The following files do not match .editorconfig:");
                     diffFiles.ForEach(
                         x => { Console.WriteLine($" * {x}"); });
-                    PrintFixCommand();
 
                     if (PrintDiff) CmdUtil.Run("git", "diff");
+
+                    if (PrintFix) PrintFixCommand();
 
                     return 1;
                 }
@@ -197,14 +203,23 @@ public class Cleanup : ConsoleCommand {
     }
 
     private void PrintFixCommand() {
-        if (FilesToFormat != FileMatch.Commits) return;
-
         var args = string.Join(
             " ", Environment.GetCommandLineArgs().Skip(1));
+
+        if (args.Contains("--jenkins")) {
+            var a = Environment.GetEnvironmentVariable(
+                "GIT_PREVIOUS_SUCCESSFUL_COMMIT");
+
+            var b = Environment.GetEnvironmentVariable(
+                "GIT_COMMIT");
+
+            args = args.Replace("--jenkins", $"-f commits -a {a} -b {b}");
+        }
+
         var cmd = $"dotnet regitlint {args}";
 
         Console.WriteLine();
-        Console.WriteLine("Run the following command to fix style issues:");
+        Console.WriteLine("Run the following command to fix formatting:");
         Console.WriteLine();
         Console.WriteLine($"    {cmd}");
         Console.WriteLine();
@@ -223,6 +238,7 @@ public class Cleanup : ConsoleCommand {
     private void SetJenkinsOptions() {
         FailOnDiff = true;
         PrintDiff = true;
+        PrintFix = true;
         AssumeHead = true;
         FilesToFormat = FileMatch.Commits;
         CommitA = Environment.GetEnvironmentVariable(

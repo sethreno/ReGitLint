@@ -12,10 +12,9 @@
             "program": "${workspaceFolder}/ReGitLint/bin/Debug/net6.0/ReGitLint",
             "args": [
                 "--skip-tool-check",
-                "--print-command",
-                "--jb",
-                "--profile=custom",
-                "--fail-on-diff",
+                "--jenkins",
+                "--assume-head",
+                "--prettier"
             ],
             "env": {"GIT_COMMIT":"73984afc4b213", "GIT_PREVIOUS_SUCCESSFUL_COMMIT":"75d034265fb9"},
             "console": "internalConsole",
