@@ -21,6 +21,13 @@ favorite editor. There are many formatting options supported... Here's
 [a reference](https://www.jetbrains.com/help/resharper/EditorConfig_Generalized.html)
 
 
+# Why CleanupCode instead of the built in dotnet format?
+`dotnet format` is cool, but currently doesn't support .editorconfig
+max_line_length. For curmudgeons like me this is a deal breaker. There's an
+[open issue](https://github.com/dotnet/format/issues/246) for it but so far
+no fix.
+
+
 ## Quick Start
 
 If you don't already have a tool manifest in your project
