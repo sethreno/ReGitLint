@@ -313,7 +313,7 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
 
         var jbArgs = new HashSet<string>(JbArgs);
 
-        if (!jbArgs.Contains("--profile")) {
+        if (!jbArgs.Any(x => x.StartsWith("--profile"))) {
             if (FormatOnly) {
                 jbArgs.Add(@"--profile=""Built-in: Reformat Code""");
             } else {
