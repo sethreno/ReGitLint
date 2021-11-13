@@ -35,7 +35,7 @@ public class Cleanup : ConsoleCommand {
         HasOption(
             "p|pattern=",
             "Optional. Only files matching this pattern will be formatted. "
-            + "Default is **/*",
+            + "Default is ** / *",
             x => FilePattern = x);
         HasOption(
             "a|commit-a=",
@@ -150,7 +150,12 @@ public class Cleanup : ConsoleCommand {
                 if (file.StartsWith(solutionDir))
                     jbFilePath = file.Substring(solutionDir.Length);
 
-                include.Append($";{jbFilePath}");
+                // hack - I haven't been able to figure out how to specify
+                // relative paths when the .sln file is contained in a peer
+                // directory to the project directores.
+                // using **/ which may match too much, but I guess this is
+                // better than mathching nothing for our use case
+                include.Append($";**/{jbFilePath}");
                 remain.Remove(file);
             }
 
