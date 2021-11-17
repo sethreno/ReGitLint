@@ -187,8 +187,7 @@ public class Cleanup : ConsoleCommand {
                     Console.WriteLine("!!!! Process Aborted !!!!");
                     Console.WriteLine(
                         "The following files do not match .editorconfig:");
-                    diffFiles.ForEach(
-                        x => { Console.WriteLine($" * {x}"); });
+                    diffFiles.ForEach(x => { Console.WriteLine($" * {x}"); });
 
                     if (PrintDiff) CmdUtil.Run("git", "diff");
 
