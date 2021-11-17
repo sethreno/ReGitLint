@@ -66,6 +66,11 @@ public class Cleanup : ConsoleCommand {
             "Skip the check to see if the jb dotnet tool exists.",
             x => SkipToolCheck = x != null);
         HasOption(
+            "disable-jb-path-hack",
+            "Don't prefix file paths sent to jb cleanupcode with '**/'. " +
+            "May reduce false positive matches.",
+            x => DisableJbPathHack = x != null);
+        HasOption(
             "jenkins",
             "Format files changed between recent commits and fail on diff",
             x => Jenkins = x != null);
@@ -108,6 +113,7 @@ public class Cleanup : ConsoleCommand {
     public bool PrintCommand { get; set; }
     public bool UsePrettier { get; set; }
     public bool AssumeHead { get; set; }
+    public bool DisableJbPathHack { get; set; }
 
     public override int Run(string[] remainingArguments) {
         if (Jenkins) SetJenkinsOptions();
@@ -160,7 +166,8 @@ public class Cleanup : ConsoleCommand {
                 // directory to the project directores.
                 // using **/ which may match too much, but I guess this is
                 // better than mathching nothing for our use case
-                include.Append($";**/{jbFilePath}");
+                var prefix = DisableJbPathHack ? "" : "**/";
+                include.Append($";{prefix}{jbFilePath}");
                 remain.Remove(file);
             }
 
