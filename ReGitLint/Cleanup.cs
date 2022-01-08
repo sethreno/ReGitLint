@@ -270,7 +270,7 @@ public class Cleanup : ConsoleCommand {
                 break;
 
             case FileMatch.Modified:
-                gitArgs = "diff --name-only";
+                gitArgs = "ls-files --modified --others --exclude-standard";
                 break;
 
             case FileMatch.Commits:
