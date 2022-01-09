@@ -53,6 +53,11 @@ public class Cleanup : ConsoleCommand {
             "for a full list of options.",
             x => JbArgs.Add(x));
         HasOption(
+            "jb-profile=",
+            "Passed to jb cleanupcode as --profile \"VALUE\"" +
+            " negates --format-only",
+            x => JbProfile = x);
+        HasOption(
             "format-only",
             "Only format files instead of running full cleanup.",
             x => FormatOnly = x != null);
@@ -103,6 +108,7 @@ public class Cleanup : ConsoleCommand {
     public string FilePattern { get; set; }
     public string CommitA { get; set; }
     public string CommitB { get; set; }
+    public string JbProfile { get; set; }
     public List<string> JbArgs { get; set; } = new();
     public bool FormatOnly { get; set; }
     public bool FailOnDiff { get; set; }
@@ -339,6 +345,9 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
         }
 
         var jbArgs = new HashSet<string>(JbArgs);
+
+        if (!string.IsNullOrEmpty(JbProfile))
+            jbArgs.Add($@"--profile ""{JbProfile}""");
 
         if (!jbArgs.Any(x => x.StartsWith("--profile"))) {
             if (FormatOnly) {
