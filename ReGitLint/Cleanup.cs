@@ -328,6 +328,14 @@ public class Cleanup : ConsoleCommand {
 
     private static bool DoesJbToolExist() {
         var exitCode = CmdUtil.Run("dotnet", "tool run jb cleanupcode -v");
+        if (exitCode != 0) {
+            exitCode = CmdUtil.Run("jb", "cleanupcode -v");
+            if (exitCode == 0) {
+                Console.WriteLine(
+                    "Local dotnet Resharper tool not found. Using global Resharper.");
+            }
+        }
+
         return exitCode == 0;
     }
 
