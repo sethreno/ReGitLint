@@ -86,6 +86,10 @@ public class Cleanup : ConsoleCommand {
             + " requests via jenkins.",
             x => AssumeHead = x != null);
         HasOption(
+            "g|use-global",
+            "Use the global version of Resharper instead.",
+            x => UseGlobalResharper = x != null);
+        HasOption(
             "print-diff",
             "Prints the full diff on fail-on-diff",
             x => PrintDiff = x != null);
@@ -119,6 +123,7 @@ public class Cleanup : ConsoleCommand {
     public bool PrintCommand { get; set; }
     public bool UsePrettier { get; set; }
     public bool AssumeHead { get; set; }
+    public bool UseGlobalResharper { get; set; }
     public bool DisableJbPathHack { get; set; }
 
     public override int Run(string[] remainingArguments) {
@@ -326,14 +331,12 @@ public class Cleanup : ConsoleCommand {
         return files.ToList();
     }
 
-    private static bool DoesJbToolExist() {
-        var exitCode = CmdUtil.Run("dotnet", "tool run jb cleanupcode -v");
-        if (exitCode != 0) {
+    private bool DoesJbToolExist() {
+        int exitCode;
+        if (!UseGlobalResharper) {
+            exitCode = CmdUtil.Run("dotnet", "tool run jb cleanupcode -v");
+        } else {
             exitCode = CmdUtil.Run("jb", "cleanupcode -v");
-            if (exitCode == 0) {
-                Console.WriteLine(
-                    "Local dotnet Resharper tool not found. Using global Resharper.");
-            }
         }
 
         return exitCode == 0;
@@ -348,7 +351,7 @@ public class Cleanup : ConsoleCommand {
 looks like jb dotnet tool isn't installed...
 you can install it by running the following command:
 
-dotnet tool install JetBrains.ReSharper.GlobalTools");
+dotnet tool install" + (!UseGlobalResharper ? string.Empty : "--global") + " JetBrains.ReSharper.GlobalTools");
             return 1;
         }
 
@@ -389,11 +392,12 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
             exclude += @"""";
         }
 
-        var args = $@"tool run jb cleanupcode ""{slnFile}"" "
+        var args = (!UseGlobalResharper ? "tool run jb cleanupcode" : "cleanupcode") + $@" ""{slnFile}"" "
             + $@"{exclude} --include=""{include}"" "
             + string.Join(" ", jbArgs);
 
-        if (PrintCommand) Console.WriteLine($"dotnet {args}");
+        var resharperCommand = !UseGlobalResharper ? "dotnet" : "jb";
+        if (PrintCommand) Console.WriteLine($"{resharperCommand} {args}");
 
         // jb returns non zero when there's nothing to format
         // capture that so we can return zero
@@ -405,7 +409,7 @@ dotnet tool install JetBrains.ReSharper.GlobalTools");
             Console.WriteLine($"error: {data}");
         }
 
-        var returnCode = CmdUtil.Run("dotnet", args,
+        var returnCode = CmdUtil.Run(resharperCommand, args,
             errorCallback: ErrorCallback,
 
             // this can take a really long time on large code bases
