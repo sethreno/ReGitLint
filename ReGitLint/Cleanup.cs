@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.ComponentModel;
+using System.Text;
 using ManyConsole;
 
 namespace ReGitLint;
@@ -331,12 +332,18 @@ public class Cleanup : ConsoleCommand {
         return files.ToList();
     }
 
-    private bool DoesJbToolExist() {
+    private static bool DoesJbToolExist(bool global) {
         int exitCode;
-        if (!UseGlobalResharper) {
+        if (!global) {
             exitCode = CmdUtil.Run("dotnet", "tool run jb cleanupcode -v");
         } else {
-            exitCode = CmdUtil.Run("jb", "cleanupcode -v");
+            try {
+                exitCode = CmdUtil.Run("jb", "cleanupcode -v");
+            } catch (Win32Exception ex) {
+                // throws if jb isn't installed globally
+                Console.WriteLine(ex.Message);
+                exitCode = -1;
+            }
         }
 
         return exitCode == 0;
@@ -346,7 +353,7 @@ public class Cleanup : ConsoleCommand {
         string include,
         string slnFile
     ) {
-        if (!SkipToolCheck && !DoesJbToolExist()) {
+        if (!SkipToolCheck && !DoesJbToolExist(UseGlobalResharper)) {
             var installCommand =
                 "dotnet tool install JetBrains.ReSharper.GlobalTools";
             if (UseGlobalResharper) installCommand += " --global";
@@ -355,9 +362,10 @@ public class Cleanup : ConsoleCommand {
 looks like jb dotnet tool isn't installed...
 you can install it by running the following command:
 
-{
-    installCommand
-}");
+    {
+        installCommand
+    }
+    ");
             return 1;
         }
 
