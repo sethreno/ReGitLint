@@ -55,7 +55,7 @@ public class Cleanup : ConsoleCommand {
             x => JbArgs.Add(x));
         HasOption(
             "jb-profile=",
-            "Passed to jb cleanupcode as --profile \"VALUE\"" +
+            "Passed to jb cleanupcode as --profile=\"VALUE\"" +
             " negates --format-only",
             x => JbProfile = x);
         HasOption(
@@ -372,7 +372,7 @@ you can install it by running the following command:
         var jbArgs = new HashSet<string>(JbArgs);
 
         if (!string.IsNullOrEmpty(JbProfile))
-            jbArgs.Add($@"--profile ""{JbProfile}""");
+            jbArgs.Add($@"--profile=""{JbProfile}""");
 
         if (!jbArgs.Any(x => x.StartsWith("--profile"))) {
             if (FormatOnly) {
