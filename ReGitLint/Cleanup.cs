@@ -347,11 +347,17 @@ public class Cleanup : ConsoleCommand {
         string slnFile
     ) {
         if (!SkipToolCheck && !DoesJbToolExist()) {
-            Console.WriteLine(@"
+            var installCommand =
+                "dotnet tool install JetBrains.ReSharper.GlobalTools";
+            if (UseGlobalResharper) installCommand += " --global";
+
+            Console.WriteLine($@"
 looks like jb dotnet tool isn't installed...
 you can install it by running the following command:
 
-dotnet tool install" + (!UseGlobalResharper ? string.Empty : "--global") + " JetBrains.ReSharper.GlobalTools");
+{
+    installCommand
+}");
             return 1;
         }
 
@@ -392,12 +398,19 @@ dotnet tool install" + (!UseGlobalResharper ? string.Empty : "--global") + " Jet
             exclude += @"""";
         }
 
-        var args = (!UseGlobalResharper ? "tool run jb cleanupcode" : "cleanupcode") + $@" ""{slnFile}"" "
+        var command = "dotnet";
+        var baseArgs = "tool run jb cleanupcode";
+        if (UseGlobalResharper) {
+            command = "jb";
+            baseArgs = "cleanupcode";
+        }
+
+        var args = baseArgs
+            + $@" ""{slnFile}"" "
             + $@"{exclude} --include=""{include}"" "
             + string.Join(" ", jbArgs);
 
-        var resharperCommand = !UseGlobalResharper ? "dotnet" : "jb";
-        if (PrintCommand) Console.WriteLine($"{resharperCommand} {args}");
+        if (PrintCommand) Console.WriteLine($"{command} {args}");
 
         // jb returns non zero when there's nothing to format
         // capture that so we can return zero
@@ -409,7 +422,7 @@ dotnet tool install" + (!UseGlobalResharper ? string.Empty : "--global") + " Jet
             Console.WriteLine($"error: {data}");
         }
 
-        var returnCode = CmdUtil.Run(resharperCommand, args,
+        var returnCode = CmdUtil.Run(command, args,
             errorCallback: ErrorCallback,
 
             // this can take a really long time on large code bases
