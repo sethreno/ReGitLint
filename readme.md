@@ -115,6 +115,10 @@ lot of time when compared to formatting all files on a large project.
 
     `dotnet regitlint -f commits -a head^^^^ -b head`
 
+* Clean up all files modified by the last four commits, including staged and unstaged changes
+
+    `dotnet regitlint -f staged,modified,commits -a head^^^^ -b head`
+
 * Clean up staged files, return 1 if files change. Handy for git hooks.
 
     `dotnet regitlint -f staged --fail-on-diff`
