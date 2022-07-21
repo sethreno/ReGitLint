@@ -289,9 +289,8 @@ public class Cleanup : ConsoleCommand {
         }
 
         if (filesToFormat.HasFlag(FileMatch.Modified)) {
-            var newFiles =
-                GetFileListFromGit(
-                    "ls-files --modified --others --exclude-standard");
+            var newFiles = GetFileListFromGit(
+                "ls-files --modified --others --exclude-standard");
             files.AddRange(newFiles);
         }
 
@@ -305,7 +304,7 @@ public class Cleanup : ConsoleCommand {
             if (string.IsNullOrEmpty(commitB)) commitB = commitA;
             if (commitA == commitB) commitA = $"{commitA}^";
 
-            string gitArgs = $"diff --name-only {commitA} {commitB}";
+            var gitArgs = $"diff --name-only {commitA} {commitB}";
             var newFiles = GetFileListFromGit(gitArgs);
             files.AddRange(newFiles);
         }
