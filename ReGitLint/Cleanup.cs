@@ -5,11 +5,12 @@ using ManyConsole;
 namespace ReGitLint;
 
 public class Cleanup : ConsoleCommand {
+    [Flags]
     public enum FileMatch {
-        Pattern,
-        Staged,
-        Modified,
-        Commits
+        Pattern = 1,
+        Staged = 2,
+        Modified = 4,
+        Commits = 8
     }
 
     public Cleanup() {
@@ -31,8 +32,18 @@ public class Cleanup : ConsoleCommand {
             " Modified     Format modified files.\n" +
             " Commits      Format files modified\n" +
             "              between commit-a and commit-b.\n",
-            x => FilesToFormat =
-                (FileMatch)Enum.Parse(typeof(FileMatch), x, true));
+            x => {
+                var flags = (FileMatch)Enum.Parse(typeof(FileMatch), x, true);
+
+                if (flags.HasFlag(FileMatch.Pattern) &&
+                    flags != FileMatch.Pattern) {
+                    Console.WriteLine(
+                        "WARNING: Pattern can't be combined with other sources, assuming pattern only.");
+                    FilesToFormat = FileMatch.Pattern;
+                } else {
+                    FilesToFormat = flags;
+                }
+            });
         HasOption(
             "p|pattern=",
             "Optional. Only files matching this pattern will be formatted. "
@@ -48,7 +59,7 @@ public class Cleanup : ConsoleCommand {
             x => CommitB = x);
         HasOption(
             "jb=",
-            "Arg passsed through to jb cleanupcode. " +
+            "Arg passed through to jb cleanupcode. " +
             "Allows multiple. e.g. --jb -d --jb --toolset=12.0 " +
             "see https://www.jetbrains.com/help/resharper/CleanupCode.html#command-line-parameters " +
             "for a full list of options.",
@@ -82,7 +93,7 @@ public class Cleanup : ConsoleCommand {
             x => Jenkins = x != null);
         HasOption(
             "assume-head",
-            "If the commit specified doesnt exist HEAD is used instead."
+            "If the commit specified doesn't exist HEAD is used instead."
             + " This was added to work around a bug when building pull"
             + " requests via jenkins.",
             x => AssumeHead = x != null);
@@ -175,9 +186,9 @@ public class Cleanup : ConsoleCommand {
 
                 // hack - I haven't been able to figure out how to specify
                 // relative paths when the .sln file is contained in a peer
-                // directory to the project directores.
+                // directory to the project directories.
                 // using **/ which may match too much, but I guess this is
-                // better than mathching nothing for our use case
+                // better than matching nothing for our use case
                 var prefix = DisableJbPathHack ? "" : "**/";
                 include.Append($";{prefix}{jbFilePath}");
                 remain.Remove(file);
@@ -195,8 +206,8 @@ public class Cleanup : ConsoleCommand {
                     .ToList();
 
             if (diffFiles.Any()) {
-                if (FilesToFormat == FileMatch.Staged ||
-                    FilesToFormat == FileMatch.Commits) {
+                if (FilesToFormat.HasFlag(FileMatch.Staged) ||
+                    FilesToFormat.HasFlag(FileMatch.Commits)) {
                     // we only care about files we formatted
                     diffFiles = diffFiles.Intersect(files).ToList();
                 }
@@ -271,35 +282,33 @@ public class Cleanup : ConsoleCommand {
         string commitB
     ) {
         var files = new HashSet<string>();
-        var gitArgs = "";
-        switch (filesToFormat) {
-            case FileMatch.Pattern:
-                files.Add(string.IsNullOrEmpty(pattern) ? "**/*" : pattern);
-                return files;
 
-            case FileMatch.Staged:
-                gitArgs = "diff --name-only --cached";
-                break;
-
-            case FileMatch.Modified:
-                gitArgs = "ls-files --modified --others --exclude-standard";
-                break;
-
-            case FileMatch.Commits:
-                if (string.IsNullOrEmpty(commitA)) commitA = commitB;
-                if (string.IsNullOrEmpty(commitB)) commitB = commitA;
-                if (commitA == commitB) commitA = $"{commitA}^";
-
-                gitArgs = $"diff --name-only {commitA} {commitB}";
-                break;
-
-            default:
-                throw new ArgumentOutOfRangeException();
+        if (filesToFormat == FileMatch.Pattern) {
+            files.Add(string.IsNullOrEmpty(pattern) ? "**/*" : pattern);
+            return files;
         }
 
-        GetFileListFromGit(gitArgs)
-            .ToList()
-            .ForEach(x => files.Add(x));
+        if (filesToFormat.HasFlag(FileMatch.Modified)) {
+            var newFiles =
+                GetFileListFromGit(
+                    "ls-files --modified --others --exclude-standard");
+            files.AddRange(newFiles);
+        }
+
+        if (filesToFormat.HasFlag(FileMatch.Staged)) {
+            var newFiles = GetFileListFromGit("diff --name-only --cached");
+            files.AddRange(newFiles);
+        }
+
+        if (filesToFormat.HasFlag(FileMatch.Commits)) {
+            if (string.IsNullOrEmpty(commitA)) commitA = commitB;
+            if (string.IsNullOrEmpty(commitB)) commitB = commitA;
+            if (commitA == commitB) commitA = $"{commitA}^";
+
+            string gitArgs = $"diff --name-only {commitA} {commitB}";
+            var newFiles = GetFileListFromGit(gitArgs);
+            files.AddRange(newFiles);
+        }
 
         return files;
     }
