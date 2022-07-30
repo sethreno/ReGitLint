@@ -164,39 +164,50 @@ public class Cleanup : ConsoleCommand {
             }
         }
 
-        SolutionFile = Path.GetRelativePath(Environment.CurrentDirectory, SolutionFile);
-        HashSet<string> filePathsRelativeToGitDirectory = new HashSet<string>();
+        SolutionFile = Path.GetRelativePath(
+            Environment.CurrentDirectory, SolutionFile);
+
+        // paths are relative to the git root directory
+        var filePaths = new HashSet<string>();
 
         if (FilesToFormat == FileMatch.Pattern) {
-            string pattern = string.IsNullOrEmpty(FilePattern) ? "**/*" : FilePattern;
+            var pattern = string.IsNullOrEmpty(FilePattern) ?
+                "**/*" :
+                FilePattern;
             var returnCode = RunCleanupCode(pattern, SolutionFile);
             if (returnCode != 0) return returnCode;
         } else {
-            filePathsRelativeToGitDirectory = GetFilesToFormat(FilesToFormat, CommitA, CommitB);
-            if (!filePathsRelativeToGitDirectory.Any()) {
+            filePaths = GetFilesToFormat(FilesToFormat, CommitA, CommitB);
+            if (!filePaths.Any()) {
                 Console.WriteLine("Nothing to format.");
                 return 0;
             }
 
-            var gitAbsoluteDirectory = GetGitDirectory();
-            var solutionAbsoluteDirectory = Path.GetDirectoryName(Path.GetFullPath(SolutionFile));
+            // absolute paths
+            var gitDirAbs = GetGitDirectory();
+            var slnDirAbs =
+                Path.GetDirectoryName(Path.GetFullPath(SolutionFile));
 
             // windows doesn't allow args > ~8100 so call cleanupcode in batches
-            var remainingFilePaths = new HashSet<string>(filePathsRelativeToGitDirectory);
+            var remainingFilePaths = new HashSet<string>(filePaths);
             while (remainingFilePaths.Any()) {
                 var include = new StringBuilder();
-                foreach (var filePathRelativeToGitDirectory in remainingFilePaths.ToArray()) {
-                    if (include.Length + filePathRelativeToGitDirectory.Length > 7000) break;
+                foreach (var filePath in remainingFilePaths.ToArray()) {
+                    if (include.Length + filePath.Length > 7000) break;
 
-                    var filePathAbsolute = Path.Combine(gitAbsoluteDirectory, filePathRelativeToGitDirectory);
+                    var filePathAbs = Path.Combine(gitDirAbs, filePath);
 
                     // jb codecleanup requires file paths relative to the sln
-                    var jbFilePath = Path.GetRelativePath(solutionAbsoluteDirectory, filePathAbsolute);
+                    var jbFilePath =
+                        Path.GetRelativePath(slnDirAbs, filePathAbs);
+
                     if (jbFilePath.StartsWith("..")) {
                         // Workaround for https://youtrack.jetbrains.com/issue/RSRP-475755:
-                        // The Ant-style wildcards do not allow to go above the .sln directory using "../", but by using **/ it works.
-                        // This may match too much, but this is better than matching nothing for our use case.
-                        jbFilePath = "**/" + filePathRelativeToGitDirectory;
+                        // The Ant-style wildcards do not allow to go above the
+                        // .sln directory using "../", but by using **/ it
+                        // works. This may match too much, but this is better
+                        // than matching nothing for our use case.
+                        jbFilePath = "**/" + filePath;
                     }
 
                     if (include.Length > 0) {
@@ -204,7 +215,7 @@ public class Cleanup : ConsoleCommand {
                     }
 
                     include.Append(jbFilePath);
-                    remainingFilePaths.Remove(filePathRelativeToGitDirectory);
+                    remainingFilePaths.Remove(filePath);
                 }
 
                 var returnCode = RunCleanupCode(
@@ -219,9 +230,10 @@ public class Cleanup : ConsoleCommand {
                 GetFileListFromGit("diff --name-only --diff-filter=ACM")
                     .ToList();
 
-            if (filePathsRelativeToGitDirectory.Any()) {
+            if (filePaths.Any()) {
                 // we only care about files we formatted
-                diffFiles = diffFiles.Intersect(filePathsRelativeToGitDirectory).ToList();
+                diffFiles = diffFiles.Intersect(filePaths)
+                    .ToList();
             }
 
             if (diffFiles.Any()) {
@@ -283,7 +295,8 @@ public class Cleanup : ConsoleCommand {
     private static string GetGitDirectory() {
         var directoryInfo = new DirectoryInfo(Environment.CurrentDirectory);
         while (directoryInfo != null) {
-            if (directoryInfo.GetDirectories(".git", SearchOption.TopDirectoryOnly).Any()) {
+            if (directoryInfo
+                .GetDirectories(".git", SearchOption.TopDirectoryOnly).Any()) {
                 return directoryInfo.FullName;
             }
 
