@@ -47,7 +47,7 @@ public class Cleanup : ConsoleCommand {
         HasOption(
             "p|pattern=",
             "Optional. Only files matching this pattern will be formatted. "
-            + "Default is ** / *",
+            + "Default is **/*",
             x => FilePattern = x);
         HasOption(
             "a|commit-a=",
@@ -84,8 +84,7 @@ public class Cleanup : ConsoleCommand {
             x => SkipToolCheck = x != null);
         HasOption(
             "disable-jb-path-hack",
-            "Don't prefix file paths sent to jb cleanupcode with '**/'. " +
-            "May reduce false positive matches.",
+            "This setting is no longer used.",
             x => DisableJbPathHack = x != null);
         HasOption(
             "jenkins",
@@ -153,51 +152,66 @@ public class Cleanup : ConsoleCommand {
             Console.WriteLine($"commit {CommitB} not found, using HEAD");
         }
 
-        var files = GetFilesToFormat(
-            FilePattern, FilesToFormat, CommitA, CommitB);
-
-        if (!files.Any()) {
-            Console.WriteLine("Nothing to format.");
-            return 0;
-        }
-
         if (string.IsNullOrEmpty(SolutionFile)) {
             Console.WriteLine(
                 "No sln file specified. Searching for one...");
             SolutionFile = FindSlnFile(".");
             Console.WriteLine($"Found {SolutionFile}. Using that.");
+        } else {
+            if (!File.Exists(SolutionFile)) {
+                throw new FileNotFoundException(
+                    "Specified sln file does not exist.", SolutionFile);
+            }
         }
 
-        var solutionDir = Path.GetDirectoryName(SolutionFile);
-        if (solutionDir.StartsWith(".\\") || solutionDir.StartsWith("./"))
-            solutionDir = solutionDir.Substring(2);
+        SolutionFile = Path.GetRelativePath(Environment.CurrentDirectory, SolutionFile);
+        HashSet<string> filePathsRelativeToGitDirectory = new HashSet<string>();
 
-        // windows doesn't allow args > ~8100 so call cleanupcode in batches
-        var remain = new HashSet<string>(files);
-        while (remain.Any()) {
-            var include = new StringBuilder();
-            foreach (var file in remain.ToArray()) {
-                if (include.Length + file.Length > 7000) break;
-
-                // jb codecleanup requires file paths relative to the sln
-                var jbFilePath = file;
-                if (file.StartsWith(solutionDir))
-                    jbFilePath = file.Substring(solutionDir.Length);
-
-                // hack - I haven't been able to figure out how to specify
-                // relative paths when the .sln file is contained in a peer
-                // directory to the project directories.
-                // using **/ which may match too much, but I guess this is
-                // better than matching nothing for our use case
-                var prefix = DisableJbPathHack ? "" : "**/";
-                include.Append($";{prefix}{jbFilePath}");
-                remain.Remove(file);
+        if (FilesToFormat == FileMatch.Pattern) {
+            string pattern = string.IsNullOrEmpty(FilePattern) ? "**/*" : FilePattern;
+            var returnCode = RunCleanupCode(pattern, SolutionFile);
+            if (returnCode != 0) return returnCode;
+        } else {
+            filePathsRelativeToGitDirectory = GetFilesToFormat(FilesToFormat, CommitA, CommitB);
+            if (!filePathsRelativeToGitDirectory.Any()) {
+                Console.WriteLine("Nothing to format.");
+                return 0;
             }
 
-            var returnCode = RunCleanupCode(
-                include.ToString(), SolutionFile);
+            var gitAbsoluteDirectory = GetGitDirectory();
+            var solutionAbsoluteDirectory = Path.GetDirectoryName(Path.GetFullPath(SolutionFile));
 
-            if (returnCode != 0) return returnCode;
+            // windows doesn't allow args > ~8100 so call cleanupcode in batches
+            var remainingFilePaths = new HashSet<string>(filePathsRelativeToGitDirectory);
+            while (remainingFilePaths.Any()) {
+                var include = new StringBuilder();
+                foreach (var filePathRelativeToGitDirectory in remainingFilePaths.ToArray()) {
+                    if (include.Length + filePathRelativeToGitDirectory.Length > 7000) break;
+
+                    var filePathAbsolute = Path.Combine(gitAbsoluteDirectory, filePathRelativeToGitDirectory);
+
+                    // jb codecleanup requires file paths relative to the sln
+                    var jbFilePath = Path.GetRelativePath(solutionAbsoluteDirectory, filePathAbsolute);
+                    if (jbFilePath.StartsWith("..")) {
+                        // Workaround for https://youtrack.jetbrains.com/issue/RSRP-475755:
+                        // The Ant-style wildcards do not allow to go above the .sln directory using "../", but by using **/ it works.
+                        // This may match too much, but this is better than matching nothing for our use case.
+                        jbFilePath = "**/" + filePathRelativeToGitDirectory;
+                    }
+
+                    if (include.Length > 0) {
+                        include.Append(';');
+                    }
+
+                    include.Append(jbFilePath);
+                    remainingFilePaths.Remove(filePathRelativeToGitDirectory);
+                }
+
+                var returnCode = RunCleanupCode(
+                    include.ToString(), SolutionFile);
+
+                if (returnCode != 0) return returnCode;
+            }
         }
 
         if (FailOnDiff) {
@@ -205,26 +219,23 @@ public class Cleanup : ConsoleCommand {
                 GetFileListFromGit("diff --name-only --diff-filter=ACM")
                     .ToList();
 
+            if (filePathsRelativeToGitDirectory.Any()) {
+                // we only care about files we formatted
+                diffFiles = diffFiles.Intersect(filePathsRelativeToGitDirectory).ToList();
+            }
+
             if (diffFiles.Any()) {
-                if (FilesToFormat.HasFlag(FileMatch.Staged) ||
-                    FilesToFormat.HasFlag(FileMatch.Commits)) {
-                    // we only care about files we formatted
-                    diffFiles = diffFiles.Intersect(files).ToList();
-                }
+                Console.WriteLine();
+                Console.WriteLine("!!!! Process Aborted !!!!");
+                Console.WriteLine(
+                    "The following files do not match .editorconfig:");
+                diffFiles.ForEach(x => { Console.WriteLine($" * {x}"); });
 
-                if (diffFiles.Any()) {
-                    Console.WriteLine();
-                    Console.WriteLine("!!!! Process Aborted !!!!");
-                    Console.WriteLine(
-                        "The following files do not match .editorconfig:");
-                    diffFiles.ForEach(x => { Console.WriteLine($" * {x}"); });
+                if (PrintDiff) CmdUtil.Run("git", "diff");
 
-                    if (PrintDiff) CmdUtil.Run("git", "diff");
+                if (PrintFix) PrintFixCommand();
 
-                    if (PrintFix) PrintFixCommand();
-
-                    return 1;
-                }
+                return 1;
             }
         }
 
@@ -255,13 +266,32 @@ public class Cleanup : ConsoleCommand {
     }
 
     private static string FindSlnFile(string dir) {
-        var files =
-            Directory.GetFiles(dir, "*.sln", SearchOption.AllDirectories);
-        if (files.Any()) return files.First();
+        var firstSolutionFile = Directory
+            .EnumerateFiles(dir, "*.sln", SearchOption.AllDirectories)
+            .FirstOrDefault();
+
+        if (firstSolutionFile != null) {
+            return firstSolutionFile;
+        }
+
         var parentDir = Directory.GetParent(dir);
         if (parentDir == null)
             throw new Exception("could not find sln file");
         return FindSlnFile(parentDir.FullName);
+    }
+
+    private static string GetGitDirectory() {
+        var directoryInfo = new DirectoryInfo(Environment.CurrentDirectory);
+        while (directoryInfo != null) {
+            if (directoryInfo.GetDirectories(".git", SearchOption.TopDirectoryOnly).Any()) {
+                return directoryInfo.FullName;
+            }
+
+            directoryInfo = directoryInfo.Parent;
+        }
+
+        throw new InvalidOperationException(
+            "This tool should be run from within a git repository.");
     }
 
     private void SetJenkinsOptions() {
@@ -276,17 +306,11 @@ public class Cleanup : ConsoleCommand {
     }
 
     private static HashSet<string> GetFilesToFormat(
-        string pattern,
         FileMatch filesToFormat,
         string commitA,
         string commitB
     ) {
         var files = new HashSet<string>();
-
-        if (filesToFormat == FileMatch.Pattern) {
-            files.Add(string.IsNullOrEmpty(pattern) ? "**/*" : pattern);
-            return files;
-        }
 
         if (filesToFormat.HasFlag(FileMatch.Modified)) {
             var newFiles = GetFileListFromGit(
