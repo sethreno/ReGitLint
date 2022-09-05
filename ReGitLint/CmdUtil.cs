@@ -71,6 +71,8 @@ public static class CmdUtil {
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
+                // testing actions
+
                 var cmdTimeoutMs = cmdTimeout.Value.TotalMilliseconds;
                 var outTimeoutMs = outputTimeout.Value.TotalMilliseconds;
 
