@@ -20,7 +20,7 @@ jobs:
         run: docker build -t local ${{ github.workspace }}/.devcontainer
 
       - name: Tool Restore
-        run: docker run -it -v $PWD:/srv -w/srv local dotnet tool restore
+        run: docker run -i -v $PWD:/srv -w/srv local dotnet tool restore
 
       - name: Check Formatting
-        run: docker run -it -v $PWD:/srv -w/srv local dotnet regitlint --fail-on-diff
+        run: docker run -i -v $PWD:/srv -w/srv local dotnet regitlint --fail-on-diff
