@@ -1,0 +1,6 @@
+# .github/action.yml
+name: "devcontainer action"
+description: "Sharing actions with devcontainers"
+runs:
+  using: "docker"
+  image: "../.devcontainer/Dockerfile"
