@@ -5,8 +5,6 @@ using ManyConsole;
 namespace ReGitLint;
 
 public class Cleanup : ConsoleCommand {
-    private const int BatchSize = 7000;
-
     [Flags]
     public enum FileMatch {
         Pattern = 1,
@@ -14,6 +12,8 @@ public class Cleanup : ConsoleCommand {
         Modified = 4,
         Commits = 8
     }
+
+    private const int BatchSize = 7000;
 
     public Cleanup() {
         IsCommand(
@@ -190,7 +190,8 @@ public class Cleanup : ConsoleCommand {
                 return 0;
             }
 
-            int runCount = (int)Math.Ceiling(filePaths.Count / (double)BatchSize);
+            var runCount =
+                (int)Math.Ceiling(filePaths.Count / (double)BatchSize);
 
             if (MaxRuns == -1 || runCount > MaxRuns) {
                 var returnCode = RunCleanupCode("**/*", SolutionFile);
