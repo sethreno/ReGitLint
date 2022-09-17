@@ -19,13 +19,15 @@ jobs:
 
       - name: List files in the repository
         run: |
-          ls ${{ github.workspace }}
+          ls -l ${{ github.workspace }}
 
       - run: pwd
 
       - name: Test creating a file
         run: |
           touch test.txt
+
+      - run: echo "test" >> readme.md
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
 
