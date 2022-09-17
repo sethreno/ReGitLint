@@ -17,22 +17,13 @@ jobs:
 
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
 
-      - name: List files in the repository
-        run: |
-          ls -l ${{ github.workspace }}
-
-      - run: pwd
-
-      - name: Test creating a file
-        run: |
-          touch test.txt
-
-      - run: echo "test" >> readme.md
-
       - run: echo "🍏 This job's status is ${{ job.status }}."
 
       - name: Build devcontainer
         run: docker build -t local ${{ github.workspace }}/.devcontainer
+
+      - name: Test Modifying files in docker
+        run: docker run -i -v $PWD:/srv -w/srv local /bin/bash -c "ls -l; touch test.txt; echo 'test' >> deploy.md"
 
       - name: Check Formatting
         run: docker run -i -v $PWD:/srv -w/srv local /bin/bash -c "dotnet tool restore; dotnet regitlint --fail-on-diff"
