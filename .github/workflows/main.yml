@@ -22,8 +22,5 @@ jobs:
       - name: Build devcontainer
         run: docker build -t local ${{ github.workspace }}/.devcontainer
 
-      - name: Test Modifying files in docker
-        run: docker run -i -v $PWD:/srv -w/srv local /bin/bash -c "dotnet format --severity info"
-
       - name: Check Formatting
-        run: docker run -i -v $PWD:/srv -w/srv local /bin/bash -c "dotnet tool restore; dotnet regitlint --fail-on-diff"
+        run: docker run --privileged -i -v $PWD:/srv -w/srv local /bin/bash -c "dotnet tool restore; dotnet regitlint --fail-on-diff"
