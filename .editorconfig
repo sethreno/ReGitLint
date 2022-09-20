@@ -11,6 +11,9 @@ end_of_line=lf
 insert_final_newline=true
 max_line_length=80
 
+# remove unused usings
+dotnet_diagnostic.IDE0005.severity = warning
+
 
 # Microsoft .NET properties
 csharp_new_line_before_catch=false
