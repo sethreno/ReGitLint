@@ -1,26 +1,19 @@
-name: GitHub Actions Demo
-on: [push]
+name: Validate PR
+on:
+  pull_request:
+    branches: [ master ]
 jobs:
-  Explore-GitHub-Actions:
+  check_formatting:
     runs-on: ubuntu-latest
+    name: Check Formatting
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-
-      - name: Check out repository code
-        uses: actions/checkout@v3
-
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - name: Check out repo
+      - uses: actions/checkout@v3
 
       - name: Build devcontainer
-        run: docker build -t local ${{ github.workspace }}/.devcontainer
+        run: |
+        docker build -t local ${{ github.workspace }}/.devcontainer
 
-      - name: Check Formatting
-        run: docker run --privileged -i -v $PWD:/srv -w/srv local /bin/bash -c "dotnet tool restore; dotnet csharpier --check ."
+      - name: Check formatting
+        run: |
+        docker run --privileged -i -v $PWD:/srv -w/srv local /bin/bash -c "dotnet tool restore; dotnet csharpier --check ."
