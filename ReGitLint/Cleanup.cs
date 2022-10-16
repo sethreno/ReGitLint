@@ -456,13 +456,11 @@ public class Cleanup : ConsoleCommand
         return files;
     }
 
-    private static bool DoesCommitExist(string sha)
-    {
+    private static bool DoesCommitExist(string sha) {
         var args = $"cat-file -t {sha}";
         var exists = false;
 
-        void OutputCallback(string data)
-        {
+        void OutputCallback(string data) {
             if (data.StartsWith("commit"))
                 exists = true;
             Console.WriteLine(data);
