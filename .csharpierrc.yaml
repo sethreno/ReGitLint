@@ -1,0 +1,10 @@
+# 80 instead of default 100 for a few reasons:
+# - discourages long names & deep nesting
+# - makes side by side diffs more readable
+# - matches prettier default
+printWidth: 80
+useTabs: false
+tabWidth: 4
+preprocessorSymbolSets:
+    - ""
+    - "DEBUG"
