@@ -19,4 +19,7 @@ jobs:
           -v $PWD:/srv
           -w /srv
           local
-          /bin/bash -c "dotnet tool restore; dotnet csharpier --check ."
+          /bin/bash -c "
+          dotnet tool restore;
+          dotnet csharpier --check .
+          "

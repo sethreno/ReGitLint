@@ -27,4 +27,5 @@ jobs:
           local
           /bin/bash -c "
           dotnet build -c Release -p:PackageVersion=$VER
+          dotnet nuget push **/*.nupkg -k ${{secrets.NUGET_API_KEY}}
           "
