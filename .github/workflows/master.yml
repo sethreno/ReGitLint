@@ -1,0 +1,33 @@
+name: Build Master
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  deploy_nuget:
+    runs-on: ubuntu-latest
+    name: Deploy Nuget
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Build devcontainer
+        run: docker build -t local ${{ github.workspace }}/.devcontainer
+
+      - name: Set version
+        run: echo "VER=6.2.${github.run_attempt}" >> $GITHUB_ENV
+
+      - name: Build
+        run: >
+          docker run -i
+          -v $PWD:/srv
+          -w /srv
+          local
+          /bin/bash -c "
+          dotnet build -c Release -p:PackageVersion=$VER
+          "
