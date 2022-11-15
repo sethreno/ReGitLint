@@ -21,5 +21,5 @@ jobs:
           local
           /bin/bash -c "
           dotnet tool restore;
-          dotnet csharpier --check .
+          dotnet csharpier --check .;
           "
