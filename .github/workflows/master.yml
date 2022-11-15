@@ -20,7 +20,7 @@ jobs:
         run: docker build -t local ${{ github.workspace }}/.devcontainer
 
       - name: Set version
-        run: echo "VER=6.2.${github.run_attempt}" >> $GITHUB_ENV
+        run: echo "VER=6.2.${{ github.run_attempt }}" >> $GITHUB_ENV
 
       - name: Build
         run: >
