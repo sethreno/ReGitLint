@@ -14,4 +14,9 @@ jobs:
         run: docker build -t local ${{ github.workspace }}/.devcontainer
 
       - name: Check formatting
-        run: docker run --privileged -i -v $PWD:/srv -w/srv local /bin/bash -c "dotnet tool restore; dotnet csharpier --check ."
+        run: >
+          docker run -i
+          -v $PWD:/srv
+          -w /srv
+          local
+          /bin/bash -c "dotnet tool restore; dotnet csharpier --check ."
