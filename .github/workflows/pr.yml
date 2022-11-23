@@ -23,3 +23,15 @@ jobs:
           dotnet tool restore;
           dotnet csharpier --check .;
           "
+
+      - name: Run Tests
+        run: >
+          docker run -i
+          -v $PWD:/srv
+          -w /srv
+          local
+          /bin/bash -c "
+          dotnet build -c Release;
+          cd Tests;
+          ./FormatEntireSln/test.sh "net6.0";
+          "
