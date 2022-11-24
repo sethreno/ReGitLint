@@ -9,7 +9,7 @@ sudo chmod -R 777 .
 
 git --version;
 
-git diff --name-only bb3f9ba222^ bb3f9ba222
+sudo git diff --name-only bb3f9ba222^ bb3f9ba222
 
 failed=0
 passed=0
