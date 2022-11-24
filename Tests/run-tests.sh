@@ -7,7 +7,8 @@ dotnet tool restore
 #   error: Files still read-only: /srv/Tests/HelloWorld/Program.cs
 sudo chmod -R 777 .
 
-failedTests=0
+failed=0
+passed=0
 
 for d in */ ; do
 
@@ -21,17 +22,18 @@ for d in */ ; do
 
         if [ $? -ne 0 ]; then
             echo "$d failed"
-            failedTests=$(($failedTests + 1))
+            failed=$(($failed + 1))
+        else
+            echo "$d passed"
+            passed=$(($passed + 1))
         fi
 
         git restore HelloWorld/
     fi
-
-    #../ReGitLint/bin/Release/$1/ReGitLint
-    #diff HelloWorld/Program.cs FormatEntireSln/Expected/Program.cs
 done
 
-if (($failedTests > 0)); then
-    echo "$failedTests tests failed"
+echo "passed: $passed failed: $failed"
+
+if (($failed > 0)); then
     exit 1
 fi

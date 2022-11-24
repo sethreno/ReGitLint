@@ -241,7 +241,7 @@ public class Cleanup : ConsoleCommand
             var runCount = (int)
                 Math.Ceiling(filePaths.Count / (double)BatchSize);
 
-            if (MaxRuns == -1 || runCount > MaxRuns)
+            if (MaxRuns != -1 && runCount > MaxRuns)
             {
                 var returnCode = RunCleanupCode("**/*", SolutionFile);
                 if (returnCode != 0)
