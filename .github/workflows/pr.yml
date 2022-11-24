@@ -33,5 +33,5 @@ jobs:
           /bin/bash -c "
           dotnet build -c Release;
           cd Tests;
-          ./FormatEntireSln/test.sh "net6.0";
+          ./run-tests.sh;
           "
