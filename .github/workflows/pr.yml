@@ -5,10 +5,13 @@ on:
 jobs:
   check_formatting:
     runs-on: ubuntu-latest
-    name: Check Formatting
+    name: Check Formatting & Run Tests
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
+        with:
+          # ReGitLint can't access commits with default fetch-depth: 1
+          fetch-depth: 0
 
       - name: Build devcontainer
         run: docker build -t local ${{ github.workspace }}/.devcontainer
@@ -22,4 +25,18 @@ jobs:
           /bin/bash -c "
           dotnet tool restore;
           dotnet csharpier --check .;
+          "
+
+      - name: Run Tests
+        run: >
+          docker run -i
+          -v $PWD:/srv
+          -w /srv
+          --user=root
+          local
+          /bin/bash -c "
+          sudo chown --quiet -R root .;
+          dotnet build -c Release;
+          cd Tests;
+          ./run-tests.sh;
           "
