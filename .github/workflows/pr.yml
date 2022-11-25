@@ -29,10 +29,10 @@ jobs:
           docker run -i
           -v $PWD:/srv
           -w /srv
-          --user=vscode
+          --user=root
           local
           /bin/bash -c "
-          chown -R vscode .
+          sudo chown -R root .
           dotnet build -c Release;
           ls -al;
           cat /etc/passwd;
