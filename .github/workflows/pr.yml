@@ -29,10 +29,12 @@ jobs:
           docker run -i
           -v $PWD:/srv
           -w /srv
+          --user=vscode
           local
           /bin/bash -c "
           dotnet build -c Release;
           ls -al;
+          cat /etc/passwd;
           cd Tests;
           ./run-tests.sh;
           "
