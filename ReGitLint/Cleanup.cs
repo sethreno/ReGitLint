@@ -498,7 +498,8 @@ public class Cleanup : ConsoleCommand
 
     private static string GetJbCommand(bool longForm)
     {
-        if (longForm) return "tool run jb";
+        if (longForm)
+            return "tool run jb";
         return "jb";
     }
 
