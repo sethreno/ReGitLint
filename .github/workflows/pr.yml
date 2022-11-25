@@ -32,6 +32,7 @@ jobs:
           local
           /bin/bash -c "
           dotnet build -c Release;
+          ls -al;
           cd Tests;
           ./run-tests.sh;
           "
