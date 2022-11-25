@@ -1,31 +1,18 @@
 #!/bin/bash
 dotnet tool restore
 
-# give everyone write permissions
-# without doing this I recieved the following error from jb
-#
-#   error: Files still read-only: /srv/Tests/HelloWorld/Program.cs
-sudo chmod -R 777 .
-
-whoami
-id
-
-git --version;
-
-sudo git diff --name-only bb3f9ba222^ bb3f9ba222
-
 failed=0
 passed=0
 
 for d in */ ; do
 
-    test_script="$d/test.sh"
+    test_script="${d}test.sh"
 
     if test -f "$test_script"; then
 
         echo "running test $d"
 
-        "$d/test.sh" "net6.0"
+        "$test_script" "net6.0"
 
         if [ $? -ne 0 ]; then
             echo "$d failed"
