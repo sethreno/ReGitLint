@@ -9,6 +9,9 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
+        with:
+          # ReGitLint can't access commits with default fetch-depth: 1
+          fetch-depth: 0
 
       - name: Build devcontainer
         run: docker build -t local ${{ github.workspace }}/.devcontainer
