@@ -35,7 +35,7 @@ jobs:
           sudo chown -R root .
           dotnet build -c Release;
           ls -al;
-          git --log;
+          git log;
           cd Tests;
           ./run-tests.sh;
           "
