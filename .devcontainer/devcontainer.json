@@ -50,5 +50,8 @@
 	// "postCreateCommand": "dotnet restore",
 
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+	// faced several issues with permissions inside container in github actions:
+	// * jb cleanupcode failed with "files still read-only"
+	// * git diff failed with "error: Could not access 'bb3f9ba222^'"
+	//"remoteUser": "vscode"
 }

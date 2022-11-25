@@ -8,6 +8,7 @@ dotnet tool restore
 sudo chmod -R 777 .
 
 whoami
+id
 
 git --version;
 
