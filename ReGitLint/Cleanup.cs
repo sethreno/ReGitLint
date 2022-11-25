@@ -112,6 +112,11 @@ public class Cleanup : ConsoleCommand
             x => DisableJbPathHack = x != null
         );
         HasOption(
+            "long-form",
+            "Call jb command using 'dotnet tool run jb' instead of 'dotnet jb'",
+            x => LongForm = x != null
+        );
+        HasOption(
             "jenkins",
             "Format files changed between recent commits and fail on diff",
             x => Jenkins = x != null
@@ -169,6 +174,7 @@ public class Cleanup : ConsoleCommand
     public bool AssumeHead { get; set; }
     public bool UseGlobalResharper { get; set; }
     public bool DisableJbPathHack { get; set; }
+    public bool LongForm { get; set; }
 
     public override int Run(string[] remainingArguments)
     {
@@ -490,12 +496,19 @@ public class Cleanup : ConsoleCommand
         return files.ToList();
     }
 
-    private static bool DoesJbToolExist(bool global)
+    private static string GetJbCommand(bool longForm)
+    {
+        if (longForm) return "tool run jb";
+        return "jb";
+    }
+
+    private static bool DoesJbToolExist(bool global, bool longForm)
     {
         int exitCode;
         if (!global)
         {
-            exitCode = CmdUtil.Run("dotnet", "tool run jb cleanupcode -v");
+            var jb = GetJbCommand(longForm);
+            exitCode = CmdUtil.Run("dotnet", $"{jb} cleanupcode -v");
         }
         else
         {
@@ -516,7 +529,7 @@ public class Cleanup : ConsoleCommand
 
     private int RunCleanupCode(string include, string slnFile)
     {
-        if (!SkipToolCheck && !DoesJbToolExist(UseGlobalResharper))
+        if (!SkipToolCheck && !DoesJbToolExist(UseGlobalResharper, LongForm))
         {
             var installCommand =
                 "dotnet tool install JetBrains.ReSharper.GlobalTools";
@@ -593,7 +606,8 @@ you can install it by running the following command:
         }
 
         var command = "dotnet";
-        var baseArgs = "tool run jb cleanupcode";
+        var jb = GetJbCommand(LongForm);
+        var baseArgs = $"{jb} cleanupcode";
         if (UseGlobalResharper)
         {
             command = "jb";
