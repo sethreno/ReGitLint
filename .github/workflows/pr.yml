@@ -29,7 +29,6 @@ jobs:
           docker run -i
           -v $PWD:/srv
           -w /srv
-          --user=vscode
           local
           /bin/bash -c "
           dotnet build -c Release;
