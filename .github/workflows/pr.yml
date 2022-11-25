@@ -32,6 +32,7 @@ jobs:
           --user=vscode
           local
           /bin/bash -c "
+          chown -R vscode .
           dotnet build -c Release;
           ls -al;
           cat /etc/passwd;
