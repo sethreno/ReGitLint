@@ -244,8 +244,8 @@ public class Cleanup : ConsoleCommand
                 return 0;
             }
 
-            var runCount = (int)
-                Math.Ceiling(filePaths.Count / (double)BatchSize);
+            var includeArgs = GetIncludeArgs(filePaths);
+            var runCount = includeArgs.Count;
 
             if (MaxRuns != -1 && runCount > MaxRuns)
             {
@@ -255,53 +255,9 @@ public class Cleanup : ConsoleCommand
             }
             else
             {
-                // absolute paths
-                var gitDirAbs = GetGitDirectory();
-                var slnDirAbs = Path.GetDirectoryName(
-                    Path.GetFullPath(SolutionFile)
-                );
-
-                // windows doesn't allow args > ~8100 so call cleanupcode in batches
-                var remainingFilePaths = new HashSet<string>(filePaths);
-                while (remainingFilePaths.Any())
+                foreach (var includeArg in includeArgs)
                 {
-                    var include = new StringBuilder();
-                    foreach (var filePath in remainingFilePaths.ToArray())
-                    {
-                        if (include.Length + filePath.Length > BatchSize)
-                            break;
-
-                        var filePathAbs = Path.Combine(gitDirAbs, filePath);
-
-                        // jb codecleanup requires file paths relative to the sln
-                        var jbFilePath = Path.GetRelativePath(
-                            slnDirAbs,
-                            filePathAbs
-                        );
-
-                        if (jbFilePath.StartsWith(".."))
-                        {
-                            // Workaround for https://youtrack.jetbrains.com/issue/RSRP-475755:
-                            // The Ant-style wildcards do not allow to go above the
-                            // .sln directory using "../", but by using **/ it
-                            // works. This may match too much, but this is better
-                            // than matching nothing for our use case.
-                            jbFilePath = "**/" + filePath;
-                        }
-
-                        if (include.Length > 0)
-                        {
-                            include.Append(';');
-                        }
-
-                        include.Append(jbFilePath);
-                        remainingFilePaths.Remove(filePath);
-                    }
-
-                    var returnCode = RunCleanupCode(
-                        include.ToString(),
-                        SolutionFile
-                    );
+                    var returnCode = RunCleanupCode(includeArg, SolutionFile);
 
                     if (returnCode != 0)
                         return returnCode;
@@ -345,6 +301,59 @@ public class Cleanup : ConsoleCommand
         }
 
         return 0;
+    }
+
+    private List<string> GetIncludeArgs(HashSet<string> filePaths)
+    {
+        List<string> includeArgs = new();
+
+        // absolute paths
+        var gitDirAbs = GetGitDirectory();
+        var slnDirAbs = Path.GetDirectoryName(
+            Path.GetFullPath(SolutionFile)
+        );
+
+        // windows doesn't allow args > ~8100 so call cleanupcode in batches
+        var remainingFilePaths = new HashSet<string>(filePaths);
+        while (remainingFilePaths.Any())
+        {
+            var include = new StringBuilder();
+            foreach (var filePath in remainingFilePaths.ToArray())
+            {
+                if (include.Length + filePath.Length > BatchSize)
+                    break;
+
+                var filePathAbs = Path.Combine(gitDirAbs, filePath);
+
+                // jb codecleanup requires file paths relative to the sln
+                var jbFilePath = Path.GetRelativePath(
+                    slnDirAbs,
+                    filePathAbs
+                );
+
+                if (jbFilePath.StartsWith(".."))
+                {
+                    // Workaround for https://youtrack.jetbrains.com/issue/RSRP-475755:
+                    // The Ant-style wildcards do not allow to go above the
+                    // .sln directory using "../", but by using **/ it
+                    // works. This may match too much, but this is better
+                    // than matching nothing for our use case.
+                    jbFilePath = "**/" + filePath;
+                }
+
+                if (include.Length > 0)
+                {
+                    include.Append(';');
+                }
+
+                include.Append(jbFilePath);
+                remainingFilePaths.Remove(filePath);
+            }
+
+            includeArgs.Add(include.ToString());
+        }
+
+        return includeArgs;
     }
 
     private void PrintFixCommand()
