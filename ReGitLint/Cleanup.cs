@@ -309,9 +309,7 @@ public class Cleanup : ConsoleCommand
 
         // absolute paths
         var gitDirAbs = GetGitDirectory();
-        var slnDirAbs = Path.GetDirectoryName(
-            Path.GetFullPath(SolutionFile)
-        );
+        var slnDirAbs = Path.GetDirectoryName(Path.GetFullPath(SolutionFile));
 
         // windows doesn't allow args > ~8100 so call cleanupcode in batches
         var remainingFilePaths = new HashSet<string>(filePaths);
@@ -326,10 +324,7 @@ public class Cleanup : ConsoleCommand
                 var filePathAbs = Path.Combine(gitDirAbs, filePath);
 
                 // jb codecleanup requires file paths relative to the sln
-                var jbFilePath = Path.GetRelativePath(
-                    slnDirAbs,
-                    filePathAbs
-                );
+                var jbFilePath = Path.GetRelativePath(slnDirAbs, filePathAbs);
 
                 if (jbFilePath.StartsWith(".."))
                 {
