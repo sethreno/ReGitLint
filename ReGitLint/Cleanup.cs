@@ -118,15 +118,22 @@ public class Cleanup : ConsoleCommand
         );
         HasOption(
             "jenkins",
-            "Format files changed between recent commits and fail on diff",
+            "Format files changed between recent commits and fail on diff."
+                + " For branch builds combine with --assume-origin-head.",
             x => Jenkins = x != null
         );
         HasOption(
             "assume-head",
-            "If the commit specified doesn't exist HEAD is used instead."
-                + " This was added to work around a bug when building pull"
-                + " requests via jenkins.",
+            "Combine with with --files-to-format commits. If commit a or b"
+                + " is not specified or doesn't exist HEAD is used instead.",
             x => AssumeHead = x != null
+        );
+        HasOption(
+            "assume-origin-head",
+            "Combine with with --files-to-format commits. If commit a or b"
+                + " is not specified or doesn't exist origin/HEAD is used instead."
+                + " Recommended for branch builds on build servers.",
+            x => AssumeOriginHead = x != null
         );
         HasOption(
             "g|use-global",
@@ -172,6 +179,7 @@ public class Cleanup : ConsoleCommand
     public bool PrintCommand { get; set; }
     public bool UsePrettier { get; set; }
     public bool AssumeHead { get; set; }
+    public bool AssumeOriginHead { get; set; }
     public bool UseGlobalResharper { get; set; }
     public bool DisableJbPathHack { get; set; }
     public bool LongForm { get; set; }
@@ -182,23 +190,29 @@ public class Cleanup : ConsoleCommand
             SetJenkinsOptions();
 
         if (
-            AssumeHead
+            (AssumeHead || AssumeOriginHead)
             && !string.IsNullOrEmpty(CommitA)
             && !DoesCommitExist(CommitA)
         )
         {
-            CommitA = "HEAD";
-            Console.WriteLine($"commit {CommitA} not found, using HEAD");
+            var newCommitA = AssumeOriginHead ? "origin/HEAD" : "HEAD";
+            Console.WriteLine(
+                $"commit {CommitA} not found, assuming {newCommitA} for a"
+            );
+            CommitA = newCommitA;
         }
 
         if (
-            AssumeHead
+            (AssumeHead || AssumeOriginHead)
             && !string.IsNullOrEmpty(CommitB)
             && !DoesCommitExist(CommitB)
         )
         {
-            CommitB = "HEAD";
-            Console.WriteLine($"commit {CommitB} not found, using HEAD");
+            var newCommitB = AssumeOriginHead ? "origin/HEAD" : "HEAD";
+            Console.WriteLine(
+                $"commit {CommitB} not found, assuming {newCommitB} for b"
+            );
+            CommitB = newCommitB;
         }
 
         if (string.IsNullOrEmpty(SolutionFile))
