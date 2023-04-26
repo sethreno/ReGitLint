@@ -1,23 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-    <LangVersion>10.0</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0;net7.0</TargetFrameworks>
   </PropertyGroup>
+
   <PropertyGroup>
     <PackAsTool>true</PackAsTool>
     <PackageId>ReGitLint</PackageId>
-    <PackageVersion>6.1.0-alpha</PackageVersion>
     <ToolCommandName>regitlint</ToolCommandName>
-    <PackageOutputPath>./nupkg</PackageOutputPath>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <RepositoryUrl>https://github.com/sethreno/ReGitLint</RepositoryUrl>
-    <Authors>Seth Reno</Authors>
-    <PackageDescription>Low friction code formatting for .net projects</PackageDescription>
-    <Copyright>Copyright 2020 Seth Reno</Copyright>
-    <PackageTags>.net;c#;git;lint;ci</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageOutputPath>$(SolutionDir)/nupkg</PackageOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ManyConsole" Version="2.0.1"/>

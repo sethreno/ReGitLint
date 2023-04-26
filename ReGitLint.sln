@@ -1,22 +1,32 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33620.401
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReGitLint", "ReGitLint\ReGitLint.csproj", "{A92B8CE9-A19D-4BA8-AB20-39B55890DB6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGitLint", "ReGitLint\ReGitLint.csproj", "{A92B8CE9-A19D-4BA8-AB20-39B55890DB6C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{DFD311DE-C793-4870-9B71-B67A225B9486}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		.github\workflows\master.yml = .github\workflows\master.yml
+		.github\workflows\pr.yml = .github\workflows\pr.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A92B8CE9-A19D-4BA8-AB20-39B55890DB6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A92B8CE9-A19D-4BA8-AB20-39B55890DB6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A92B8CE9-A19D-4BA8-AB20-39B55890DB6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A92B8CE9-A19D-4BA8-AB20-39B55890DB6C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5C07519F-D58A-4BE5-81DB-D06FD4F50B3A}
 	EndGlobalSection
 EndGlobal
