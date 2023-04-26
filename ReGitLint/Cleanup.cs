@@ -289,7 +289,7 @@ public class Cleanup : ConsoleCommand
             if (filePaths.Any())
             {
                 // we only care about files we formatted
-                diffFiles = diffFiles.Intersect(filePaths).ToList();
+                diffFiles = diffFiles.Intersect(filePaths, StringComparer.Ordinal).ToList();
             }
 
             if (diffFiles.Any())
@@ -299,10 +299,7 @@ public class Cleanup : ConsoleCommand
                 Console.WriteLine(
                     "The following files do not match .editorconfig:"
                 );
-                diffFiles.ForEach(x =>
-                {
-                    Console.WriteLine($" * {x}");
-                });
+                diffFiles.ForEach(x => Console.WriteLine($" * {x}"));
 
                 if (PrintDiff)
                     CmdUtil.Run("git", "diff");
@@ -340,7 +337,7 @@ public class Cleanup : ConsoleCommand
                 // jb codecleanup requires file paths relative to the sln
                 var jbFilePath = Path.GetRelativePath(slnDirAbs, filePathAbs);
 
-                if (jbFilePath.StartsWith(".."))
+                if (jbFilePath.StartsWith("..", StringComparison.OrdinalIgnoreCase))
                 {
                     // Workaround for https://youtrack.jetbrains.com/issue/RSRP-475755:
                     // The Ant-style wildcards do not allow to go above the
@@ -369,7 +366,7 @@ public class Cleanup : ConsoleCommand
     {
         var args = string.Join(" ", Environment.GetCommandLineArgs().Skip(1));
 
-        if (args.Contains("--jenkins"))
+        if (args.Contains("--jenkins", StringComparison.OrdinalIgnoreCase))
         {
             var a = Environment.GetEnvironmentVariable(
                 "GIT_PREVIOUS_SUCCESSFUL_COMMIT"
@@ -377,7 +374,7 @@ public class Cleanup : ConsoleCommand
 
             var b = Environment.GetEnvironmentVariable("GIT_COMMIT");
 
-            args = args.Replace("--jenkins", $"-f commits -a {a} -b {b}");
+            args = args.Replace("--jenkins", $"-f commits -a {a} -b {b}", StringComparison.OrdinalIgnoreCase);
         }
 
         var cmd = $"dotnet regitlint {args}";
@@ -469,7 +466,7 @@ public class Cleanup : ConsoleCommand
                 commitA = commitB;
             if (string.IsNullOrEmpty(commitB))
                 commitB = commitA;
-            if (commitA == commitB)
+            if (string.Equals(commitA, commitB, StringComparison.OrdinalIgnoreCase))
                 commitA = $"{commitA}^";
 
             var gitArgs = $"diff --name-only {commitA} {commitB}";
@@ -487,7 +484,7 @@ public class Cleanup : ConsoleCommand
 
         void OutputCallback(string data)
         {
-            if (data.StartsWith("commit"))
+            if (data.StartsWith("commit", StringComparison.OrdinalIgnoreCase))
                 exists = true;
             Console.WriteLine(data);
         }
@@ -573,7 +570,7 @@ you can install it by running the following command:
         if (!string.IsNullOrEmpty(JbProfile))
             jbArgs.Add($@"--profile=""{JbProfile}""");
 
-        if (!jbArgs.Any(x => x.StartsWith("--profile")))
+        if (!jbArgs.Any(x => x.StartsWith("--profile", StringComparison.OrdinalIgnoreCase)))
         {
             if (FormatOnly)
             {
@@ -648,7 +645,7 @@ you can install it by running the following command:
 
         void ErrorCallback(string data)
         {
-            if (data.Contains("No items were found to cleanup"))
+            if (data.Contains("No items were found to cleanup", StringComparison.OrdinalIgnoreCase))
                 nothingToFormat = true;
             Console.WriteLine($"error: {data}");
         }
