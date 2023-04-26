@@ -337,7 +337,7 @@ public class Cleanup : ConsoleCommand
                 // jb codecleanup requires file paths relative to the sln
                 var jbFilePath = Path.GetRelativePath(slnDirAbs, filePathAbs);
 
-                if (jbFilePath.StartsWith("..", StringComparison.OrdinalIgnoreCase))
+                if (jbFilePath.StartsWith("..", StringComparison.Ordinal))
                 {
                     // Workaround for https://youtrack.jetbrains.com/issue/RSRP-475755:
                     // The Ant-style wildcards do not allow to go above the
@@ -366,7 +366,7 @@ public class Cleanup : ConsoleCommand
     {
         var args = string.Join(" ", Environment.GetCommandLineArgs().Skip(1));
 
-        if (args.Contains("--jenkins", StringComparison.OrdinalIgnoreCase))
+        if (args.Contains("--jenkins", StringComparison.Ordinal))
         {
             var a = Environment.GetEnvironmentVariable(
                 "GIT_PREVIOUS_SUCCESSFUL_COMMIT"
@@ -374,7 +374,7 @@ public class Cleanup : ConsoleCommand
 
             var b = Environment.GetEnvironmentVariable("GIT_COMMIT");
 
-            args = args.Replace("--jenkins", $"-f commits -a {a} -b {b}", StringComparison.OrdinalIgnoreCase);
+            args = args.Replace("--jenkins", $"-f commits -a {a} -b {b}", StringComparison.Ordinal);
         }
 
         var cmd = $"dotnet regitlint {args}";
@@ -466,7 +466,7 @@ public class Cleanup : ConsoleCommand
                 commitA = commitB;
             if (string.IsNullOrEmpty(commitB))
                 commitB = commitA;
-            if (string.Equals(commitA, commitB, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(commitA, commitB, StringComparison.Ordinal))
                 commitA = $"{commitA}^";
 
             var gitArgs = $"diff --name-only {commitA} {commitB}";
@@ -484,7 +484,7 @@ public class Cleanup : ConsoleCommand
 
         void OutputCallback(string data)
         {
-            if (data.StartsWith("commit", StringComparison.OrdinalIgnoreCase))
+            if (data.StartsWith("commit", StringComparison.Ordinal))
                 exists = true;
             Console.WriteLine(data);
         }
@@ -570,7 +570,7 @@ you can install it by running the following command:
         if (!string.IsNullOrEmpty(JbProfile))
             jbArgs.Add($@"--profile=""{JbProfile}""");
 
-        if (!jbArgs.Any(x => x.StartsWith("--profile", StringComparison.OrdinalIgnoreCase)))
+        if (!jbArgs.Any(x => x.StartsWith("--profile", StringComparison.Ordinal)))
         {
             if (FormatOnly)
             {
@@ -645,7 +645,7 @@ you can install it by running the following command:
 
         void ErrorCallback(string data)
         {
-            if (data.Contains("No items were found to cleanup", StringComparison.OrdinalIgnoreCase))
+            if (data.Contains("No items were found to cleanup", StringComparison.Ordinal))
                 nothingToFormat = true;
             Console.WriteLine($"error: {data}");
         }

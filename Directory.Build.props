@@ -16,9 +16,8 @@
         <RepositoryUrl>https://github.com/sethreno/ReGitLint</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <Product>$(AssemblyName) ($(TargetFramework))</Product>
-        <Version>6.1.0-alpha</Version>
 
-        <!--<Nullable>enable</Nullable>-->
+        <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>latest</LangVersion>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -58,9 +57,4 @@
         <None Include="$(MSBuildThisFileDirectory)\icon.png" Pack="true" PackagePath="\" />
         <None Include="$(MSBuildThisFileDirectory)\readme.md" Pack="true" PackagePath="\" />
     </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    </ItemGroup>
-
 </Project>
