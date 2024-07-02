@@ -3,22 +3,25 @@
   "isRoot": true,
   "tools": {
     "jetbrains.resharper.globaltools": {
-      "version": "2022.2.4",
+      "version": "2024.1.4",
       "commands": [
         "jb"
-      ]
+      ],
+      "rollForward": false
     },
     "regitlint": {
-      "version": "6.0.6",
+      "version": "6.3.12",
       "commands": [
         "regitlint"
-      ]
+      ],
+      "rollForward": false
     },
     "csharpier": {
-      "version": "0.20.0",
+      "version": "0.28.2",
       "commands": [
         "dotnet-csharpier"
-      ]
+      ],
+      "rollForward": false
     }
   }
 }

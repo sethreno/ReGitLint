@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/ReGitLint/bin/Debug/net6.0/ReGitLint",
+            "program": "${workspaceFolder}/ReGitLint/bin/Debug/net8.0/ReGitLint",
             "args": [
                 "--skip-tool-check",
                 "--jenkins",

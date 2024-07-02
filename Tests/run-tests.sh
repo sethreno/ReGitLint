@@ -12,7 +12,7 @@ for d in */ ; do
 
         echo "running test $d"
 
-        "$test_script" "net6.0"
+        "$test_script" "net8.0"
 
         if [ $? -ne 0 ]; then
             echo "$d failed"
