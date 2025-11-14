@@ -411,11 +411,12 @@ public class Cleanup : ConsoleCommand
         var directoryInfo = new DirectoryInfo(Environment.CurrentDirectory);
         while (directoryInfo != null)
         {
-            if (
-                directoryInfo
-                    .GetDirectories(".git", SearchOption.TopDirectoryOnly)
-                    .Any()
-            )
+            var hasGitDir = directoryInfo
+                .GetDirectories(".git", SearchOption.TopDirectoryOnly).Any();
+            var hasGitFile = directoryInfo
+                .GetFiles(".git", SearchOption.TopDirectoryOnly).Any();
+
+            if (hasGitDir || hasGitFile)
             {
                 return directoryInfo.FullName;
             }
