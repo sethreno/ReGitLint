@@ -412,9 +412,12 @@ public class Cleanup : ConsoleCommand
         while (directoryInfo != null)
         {
             var hasGitDir = directoryInfo
-                .GetDirectories(".git", SearchOption.TopDirectoryOnly).Any();
+                .GetDirectories(".git", SearchOption.TopDirectoryOnly)
+                .Any();
+            
             var hasGitFile = directoryInfo
-                .GetFiles(".git", SearchOption.TopDirectoryOnly).Any();
+                .GetFiles(".git", SearchOption.TopDirectoryOnly)
+                .Any();
 
             if (hasGitDir || hasGitFile)
             {
