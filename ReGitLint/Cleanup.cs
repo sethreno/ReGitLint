@@ -411,11 +411,11 @@ public class Cleanup : ConsoleCommand
         var directoryInfo = new DirectoryInfo(Environment.CurrentDirectory);
         while (directoryInfo != null)
         {
-            if (
-                directoryInfo
-                    .GetDirectories(".git", SearchOption.TopDirectoryOnly)
-                    .Any()
-            )
+            var gitEntry = directoryInfo
+                .GetFileSystemInfos(".git", SearchOption.TopDirectoryOnly)
+                .FirstOrDefault();
+
+            if (gitEntry != null)
             {
                 return directoryInfo.FullName;
             }
@@ -424,7 +424,7 @@ public class Cleanup : ConsoleCommand
         }
 
         throw new InvalidOperationException(
-            "This tool should be run from within a git repository."
+            "This tool should be run from within a git repository, worktree or submodule."
         );
     }
 
