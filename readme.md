@@ -83,6 +83,10 @@ lot of time when compared to formatting all files on a large project.
 
     `dotnet regitlint`
 
+* Specify a solution file (.sln or .slnx)
+
+    `dotnet regitlint -s MySolution.slnx`
+
 * Format only, don't run a full code cleanup
 
     `dotnet regitlint --format-only`

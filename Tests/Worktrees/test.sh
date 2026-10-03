@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-target_framework="${1:-net8.0}"
+target_framework="${1:-net10.0}"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 tests_dir="$(cd "$script_dir/.." && pwd)"
 
@@ -37,16 +37,6 @@ cp -r "$tests_dir/../.config" "$temp_dir/"
     dotnet tool restore >/dev/null
 )
 
-create_sln() {
-    local name="$1"
-    local out="$2"
-    if dotnet new sln --help 2>&1 | grep -q -- "--format"; then
-        dotnet new sln -n "$name" --format sln -o "$out" >/dev/null
-    else
-        dotnet new sln -n "$name" -o "$out" >/dev/null
-    fi
-}
-
 create_classlib() {
     local name="$1"
     local out="$2"
@@ -61,10 +51,10 @@ public class SubExtraUnformatted {
     int unformattedSubField;
 }
 EOF
-create_sln "Sub" "$temp_dir/sub-sln-src/src"
+dotnet new sln -n "Sub" -o "$temp_dir/sub-sln-src/src" >/dev/null
 (
     cd "$temp_dir/sub-sln-src/src"
-    dotnet sln Sub.sln add SubSlnLib/SubSlnLib.csproj >/dev/null
+    dotnet sln add SubSlnLib/SubSlnLib.csproj >/dev/null
     cd ..
     git init -q && git add . && git commit -q -m "init sub-sln"
 )
@@ -85,16 +75,16 @@ public class MainExtraUnformatted {
     int unformattedMainField;
 }
 EOF
-create_sln "Main" "$temp_dir/main-repo/src"
+dotnet new sln -n "Main" -o "$temp_dir/main-repo/src" >/dev/null
 (
     cd "$temp_dir/main-repo/src"
-    dotnet sln Main.sln add MainLib/MainLib.csproj >/dev/null
+    dotnet sln add MainLib/MainLib.csproj >/dev/null
     cd ..
     git init -q && git add . && git commit -q -m "init main"
     git -c protocol.file.allow=always submodule -q add "$temp_dir/sub-sln-src" sub-with-sln
     git -c protocol.file.allow=always submodule -q add "$temp_dir/sub-nosln-src" sub-without-sln
     cd src
-    dotnet sln Main.sln add ../sub-without-sln/src/SubNoSlnLib/SubNoSlnLib.csproj >/dev/null
+    dotnet sln add ../sub-without-sln/src/SubNoSlnLib/SubNoSlnLib.csproj >/dev/null
     cd ..
     git commit -q -a -m "add submodules"
 )

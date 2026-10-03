@@ -11,7 +11,7 @@ jobs:
     name: Deploy Nuget
     steps:
       - name: Check out repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Build devcontainer
         run: docker build -t local ${{ github.workspace }}/.devcontainer

@@ -10,9 +10,11 @@ for d in */ ; do
 
     if test -f "$test_script"; then
 
+        chmod +x "$test_script" 2>/dev/null || true
+
         echo "running test $d"
 
-        "$test_script" "net8.0"
+        "$test_script" "net10.0"
 
         if [ $? -ne 0 ]; then
             echo "$d failed"
