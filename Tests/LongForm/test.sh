@@ -3,7 +3,7 @@
 # exit if any command fails
 set -e
 
-../ReGitLint/bin/Release/$1/ReGitLint --long-form --print-command > long.txt
+dotnet ../ReGitLint/bin/Release/$1/ReGitLint.dll --long-form --print-command > long.txt
 
 if grep -q "dotnet tool run jb " long.txt; then
     echo "found 'dotnet tool run jb '"

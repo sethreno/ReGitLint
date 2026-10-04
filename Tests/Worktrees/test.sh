@@ -5,19 +5,7 @@ target_framework="${1:-net10.0}"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 tests_dir="$(cd "$script_dir/.." && pwd)"
 
-regitlint_cmd="$tests_dir/../ReGitLint/bin/Release/$target_framework/ReGitLint"
-case "$(uname -s)" in
-    MINGW*|MSYS*|CYGWIN*)
-        if [ -f "${regitlint_cmd}.exe" ]; then
-            regitlint_cmd="${regitlint_cmd}.exe"
-        fi
-        ;;
-esac
-
-if [ ! -f "$regitlint_cmd" ]; then
-    echo "ReGitLint binary not found at $regitlint_cmd"
-    exit 1
-fi
+regitlint_binary="$tests_dir/../ReGitLint/bin/Release/$target_framework/ReGitLint.dll"
 
 temp_dir=$(mktemp -d)
 cleanup() {
@@ -37,14 +25,8 @@ cp -r "$tests_dir/../.config" "$temp_dir/"
     dotnet tool restore >/dev/null
 )
 
-create_classlib() {
-    local name="$1"
-    local out="$2"
-    dotnet new classlib -n "$name" -f "$target_framework" -o "$out" >/dev/null
-}
-
 # 1. Setup sub-sln-src (submodule that HAS its own .sln in src/)
-create_classlib "SubSlnLib" "$temp_dir/sub-sln-src/src/SubSlnLib"
+dotnet new classlib -n SubSlnLib -f "$target_framework" -o "$temp_dir/sub-sln-src/src/SubSlnLib" >/dev/null
 mv "$temp_dir/sub-sln-src/src/SubSlnLib/Class1.cs" "$temp_dir/sub-sln-src/src/SubSlnLib/SubSlnClass.cs"
 cat << "EOF" > "$temp_dir/sub-sln-src/src/SubSlnLib/SubExtraUnformatted.cs"
 public class SubExtraUnformatted {
@@ -60,7 +42,7 @@ dotnet new sln -n "Sub" -o "$temp_dir/sub-sln-src/src" >/dev/null
 )
 
 # 2. Setup sub-nosln-src (submodule with NO .sln)
-create_classlib "SubNoSlnLib" "$temp_dir/sub-nosln-src/src/SubNoSlnLib"
+dotnet new classlib -n SubNoSlnLib -f "$target_framework" -o "$temp_dir/sub-nosln-src/src/SubNoSlnLib" >/dev/null
 mv "$temp_dir/sub-nosln-src/src/SubNoSlnLib/Class1.cs" "$temp_dir/sub-nosln-src/src/SubNoSlnLib/SubNoSlnClass.cs"
 (
     cd "$temp_dir/sub-nosln-src"
@@ -68,7 +50,7 @@ mv "$temp_dir/sub-nosln-src/src/SubNoSlnLib/Class1.cs" "$temp_dir/sub-nosln-src/
 )
 
 # 3. Setup main-repo (has .sln in src/)
-create_classlib "MainLib" "$temp_dir/main-repo/src/MainLib"
+dotnet new classlib -n MainLib -f "$target_framework" -o "$temp_dir/main-repo/src/MainLib" >/dev/null
 mv "$temp_dir/main-repo/src/MainLib/Class1.cs" "$temp_dir/main-repo/src/MainLib/MainClass.cs"
 cat << "EOF" > "$temp_dir/main-repo/src/MainLib/MainExtraUnformatted.cs"
 public class MainExtraUnformatted {
@@ -108,7 +90,7 @@ echo "Test 1: Create a git repo, create a worktree, execute from src/ subdir"
 (
     cd "$temp_dir/main-wt/src"
     echo "class UnformattedWt { int x; }" >> MainLib/MainClass.cs
-    "$regitlint_cmd" -f modified >/dev/null
+    dotnet $regitlint_binary -f modified >/dev/null
     if ! git diff MainLib/MainClass.cs | grep -q "private int x;"; then
         echo "FAIL Test 1: MainClass.cs was not formatted"
         exit 1
@@ -125,7 +107,7 @@ echo "Test 2: Create a submodule with its own .sln, execute from src/ subdir"
 (
     cd "$temp_dir/main-repo/sub-with-sln/src"
     echo "class UnformattedSubSln { int x; }" >> SubSlnLib/SubSlnClass.cs
-    "$regitlint_cmd" -f modified >/dev/null
+    dotnet $regitlint_binary -f modified >/dev/null
     if ! git diff SubSlnLib/SubSlnClass.cs | grep -q "private int x;"; then
         echo "FAIL Test 2: SubSlnClass.cs was not formatted"
         exit 1
@@ -146,7 +128,7 @@ echo "Test 3: Create a submodule without .sln, execute from submodule root"
 (
     cd "$temp_dir/main-repo/sub-without-sln"
     echo "class UnformattedSubNoSln { int x; }" >> src/SubNoSlnLib/SubNoSlnClass.cs
-    "$regitlint_cmd" -f modified >/dev/null
+    dotnet $regitlint_binary -f modified >/dev/null
     if ! git diff src/SubNoSlnLib/SubNoSlnClass.cs | grep -q "private int x;"; then
         echo "FAIL Test 3: SubNoSlnClass.cs was not formatted"
         exit 1
@@ -163,7 +145,7 @@ echo "Test 4: Create a submodule inside a worktree, execute from src/ subdir"
 (
     cd "$temp_dir/main-wt/sub-with-sln/src"
     echo "class UnformattedSubInWt { int x; }" >> SubSlnLib/SubSlnClass.cs
-    "$regitlint_cmd" -f modified >/dev/null
+    dotnet $regitlint_binary -f modified >/dev/null
     if ! git diff SubSlnLib/SubSlnClass.cs | grep -q "private int x;"; then
         echo "FAIL Test 4: SubSlnClass.cs in worktree was not formatted"
         exit 1
@@ -176,7 +158,7 @@ echo "Test 5: Create a worktree of a submodule, execute from src/ subdir"
 (
     cd "$temp_dir/sub-wt/src"
     echo "class UnformattedSubWt { int x; }" >> SubSlnLib/SubSlnClass.cs
-    "$regitlint_cmd" -f modified >/dev/null
+    dotnet $regitlint_binary -f modified >/dev/null
     if ! git diff SubSlnLib/SubSlnClass.cs | grep -q "private int x;"; then
         echo "FAIL Test 5: SubSlnClass.cs in submodule worktree was not formatted"
         exit 1
