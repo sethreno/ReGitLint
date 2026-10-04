@@ -5,10 +5,14 @@ on:
     branches:
     - master
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy_nuget:
     runs-on: ubuntu-latest
-    name: Deploy Nuget
+    name: Deploy to NuGet
     steps:
       - name: Check out repo
         uses: actions/checkout@v7
@@ -18,6 +22,12 @@ jobs:
 
       - name: Set version
         run: echo "VER=6.3.${{ github.run_number }}" >> $GITHUB_ENV
+
+      - name: NuGet login
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: sethreno
 
       - name: Build
         run: >
@@ -29,5 +39,5 @@ jobs:
           dotnet build -c Release -p:PackageVersion=$VER;
           dotnet nuget push **/*.nupkg
           -s 'https://api.nuget.org/v3/index.json'
-          -k ${{secrets.NUGET_API_KEY}};
+          -k ${{ steps.login.outputs.NUGET_API_KEY }};
           "
