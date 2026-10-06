@@ -7,7 +7,7 @@ low-friction .NET linting for teams without requiring everyone to install
 [ReSharper](https://www.jetbrains.com/resharper/).
 
 [CleanupCode](https://www.jetbrains.com/help/resharper/CleanupCode.html)
-supports formatting C#, as well as VB.NBET, C++, HTML, ASP.NET, Razor,
+supports formatting C#, as well as VB.NET, C++, HTML, ASP.NET, Razor,
 JavaScript, TypeScript, CSS, XML, and XAML.
 
 ReGitLint puts an end to style wars by making it easy to add git hooks
