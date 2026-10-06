@@ -25,7 +25,7 @@ cp -r "$tests_dir/../.config" "$temp_dir/"
     dotnet tool restore >/dev/null
 )
 
-# 1. Setup sub-sln-src (submodule that HAS its own .sln in src/)
+# 1. Setup sub-sln-src (submodule that HAS its own solution in src/)
 dotnet new classlib -n SubSlnLib -f "$target_framework" -o "$temp_dir/sub-sln-src/src/SubSlnLib" >/dev/null
 mv "$temp_dir/sub-sln-src/src/SubSlnLib/Class1.cs" "$temp_dir/sub-sln-src/src/SubSlnLib/SubSlnClass.cs"
 cat << "EOF" > "$temp_dir/sub-sln-src/src/SubSlnLib/SubExtraUnformatted.cs"
@@ -41,7 +41,7 @@ dotnet new sln -n "Sub" -o "$temp_dir/sub-sln-src/src" >/dev/null
     git init -q && git add . && git commit -q -m "init sub-sln"
 )
 
-# 2. Setup sub-nosln-src (submodule with NO .sln)
+# 2. Setup sub-nosln-src (submodule with NO solution)
 dotnet new classlib -n SubNoSlnLib -f "$target_framework" -o "$temp_dir/sub-nosln-src/src/SubNoSlnLib" >/dev/null
 mv "$temp_dir/sub-nosln-src/src/SubNoSlnLib/Class1.cs" "$temp_dir/sub-nosln-src/src/SubNoSlnLib/SubNoSlnClass.cs"
 (
@@ -49,7 +49,7 @@ mv "$temp_dir/sub-nosln-src/src/SubNoSlnLib/Class1.cs" "$temp_dir/sub-nosln-src/
     git init -q && git add . && git commit -q -m "init sub-nosln"
 )
 
-# 3. Setup main-repo (has .sln in src/)
+# 3. Setup main-repo (has solution in src/)
 dotnet new classlib -n MainLib -f "$target_framework" -o "$temp_dir/main-repo/src/MainLib" >/dev/null
 mv "$temp_dir/main-repo/src/MainLib/Class1.cs" "$temp_dir/main-repo/src/MainLib/MainClass.cs"
 cat << "EOF" > "$temp_dir/main-repo/src/MainLib/MainExtraUnformatted.cs"
@@ -103,7 +103,7 @@ echo "Test 1: Create a git repo, create a worktree, execute from src/ subdir"
 echo "Test 1 passed: worktree detected and formatted from src/ subdir."
 
 # Test 2: Submodule with own sln, run from src/ (subdir of submodule root)
-echo "Test 2: Create a submodule with its own .sln, execute from src/ subdir"
+echo "Test 2: Create a submodule with its own solution, execute from src/ subdir"
 (
     cd "$temp_dir/main-repo/sub-with-sln/src"
     echo "class UnformattedSubSln { int x; }" >> SubSlnLib/SubSlnClass.cs
@@ -123,8 +123,8 @@ echo "Test 2: Create a submodule with its own .sln, execute from src/ subdir"
 )
 echo "Test 2 passed: submodule with own sln detected and formatted from src/ subdir."
 
-# Test 3: Submodule without sln, run from sub-without-sln root (using parent .sln)
-echo "Test 3: Create a submodule without .sln, execute from submodule root"
+# Test 3: Submodule without sln, run from sub-without-sln root (using parent solution)
+echo "Test 3: Create a submodule without solution, execute from submodule root"
 (
     cd "$temp_dir/main-repo/sub-without-sln"
     echo "class UnformattedSubNoSln { int x; }" >> src/SubNoSlnLib/SubNoSlnClass.cs
