@@ -1,20 +1,20 @@
 name: Validate PR
 on:
   pull_request:
-    branches: [ master ]
+
 jobs:
   check_formatting:
     runs-on: ubuntu-latest
     name: Check Formatting & Run Tests
     steps:
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
-            6.0.x
+            10.0.x
             8.0.x
       - name: Check out repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           # ReGitLint can't access commits with default fetch-depth: 1
           fetch-depth: 0
@@ -30,7 +30,7 @@ jobs:
           local
           /bin/bash -c "
           dotnet tool restore;
-          dotnet csharpier --check .;
+          dotnet csharpier check .;
           "
 
       - name: Run Tests
@@ -44,5 +44,5 @@ jobs:
           sudo chown --quiet -R root .;
           dotnet build -c Release;
           cd Tests;
-          ./run-tests.sh;
+          bash ./run-tests.sh;
           "

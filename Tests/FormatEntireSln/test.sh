@@ -5,6 +5,6 @@
 #
 #   error: Files still read-only: /srv/Tests/HelloWorld/Program.cs
 
-../ReGitLint/bin/Release/$1/ReGitLint > /dev/null
+dotnet ../ReGitLint/bin/Release/$1/ReGitLint.dll > /dev/null
 
 diff HelloWorld/Program.cs FormatEntireSln/Expected/Program.cs

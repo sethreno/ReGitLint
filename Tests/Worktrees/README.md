@@ -14,7 +14,7 @@ When `ReGitLint` runs with options like `-f modified`, it must:
 1. Walk up from the current working directory until it finds `.git` (whether it is a directory or a pointer file).
 2. Determine the Git repository root.
 3. Query `git diff` for modified files relative to that root.
-4. Locate the appropriate solution (`.sln`) file and format **only** the target modified files, without crashing, getting confused by parent/child repository boundaries, or formatting files in another repository.
+4. Locate the appropriate solution file and format **only** the target modified files, without crashing, getting confused by parent/child repository boundaries, or formatting files in another repository.
 
 ---
 
@@ -27,14 +27,14 @@ temp_dir/
 ├── main-repo/                      # Standard Git repository
 │   ├── .git/                       # [DIR]
 │   ├── src/
-│   │   ├── Main.sln                # References MainLib & sub-without-sln
+│   │   ├── Main.slnx               # References MainLib & sub-without-sln
 │   │   └── MainLib/MainClass.cs
-│   ├── sub-with-sln/               # Submodule WITH its own .sln
+│   ├── sub-with-sln/               # Submodule WITH its own solution
 │   │   ├── .git                    # [FILE] -> points to main-repo/.git/modules/...
 │   │   └── src/
-│   │       ├── Sub.sln
+│   │       ├── Sub.slnx
 │   │       └── SubSlnLib/SubSlnClass.cs
-│   └── sub-without-sln/            # Submodule WITHOUT its own .sln
+│   └── sub-without-sln/            # Submodule WITHOUT its own solution
 │       ├── .git                    # [FILE] -> points to main-repo/.git/modules/...
 │       └── src/
 │           └── SubNoSlnLib/SubNoSlnClass.cs
@@ -42,7 +42,7 @@ temp_dir/
 ├── main-wt/                        # Worktree of main-repo
 │   ├── .git                        # [FILE] -> points to main-repo/.git/worktrees/...
 │   ├── src/
-│   │   ├── Main.sln
+│   │   ├── Main.slnx
 │   │   └── MainLib/MainClass.cs
 │   └── sub-with-sln/               # Submodule inside a worktree
 │       └── ...
@@ -50,15 +50,15 @@ temp_dir/
 └── sub-wt/                         # Worktree of the submodule
     ├── .git                        # [FILE] -> points to main-repo/.git/modules/.../worktrees/...
     └── src/
-        ├── Sub.sln
+        ├── Sub.slnx
         └── SubSlnLib/SubSlnClass.cs
 ```
 
 ### Why two different submodules?
-- **`sub-with-sln`**: Represents a standalone library with its own build and solution file. When running inside it, `ReGitLint` formats code using `Sub.sln`.
-- **`sub-without-sln`**: Represents a project without its own `.sln`, referenced only by the parent repository's `Main.sln`. This verifies `ReGitLint`'s fallback logic to search upwards into parent directories for a solution.
+- **`sub-with-sln`**: Represents a standalone library with its own build and solution file. When running inside it, `ReGitLint` formats code using `Sub.slnx`.
+- **`sub-without-sln`**: Represents a project without its own solution file, referenced only by the parent repository's `Main.slnx`. This verifies `ReGitLint`'s fallback logic to search upwards into parent directories for a solution.
 
-### Why locate `.sln` files inside `src/`?
+### Why locate solution files inside `src/`?
 Developers frequently run tools from nested directories (like `src/`) rather than the root where `.git` is located. This verifies that `ReGitLint` successfully traverses parent directories to resolve the repository root and solution file.
 
 ---
@@ -73,14 +73,14 @@ Each test introduces unformatted C# code to a committed file, executes `regitlin
   - `MainLib/MainClass.cs` inside `main-wt` is formatted.
   - The parent repository `main-repo` remains untouched.
 
-### Test 2: Submodule with its own `.sln` (run from `src/`)
+### Test 2: Submodule with its own solution file (run from `src/`)
 - **Action**: Runs `regitlint -f modified` from `main-repo/sub-with-sln/src`.
 - **Verification**:
   - `SubSlnLib/SubSlnClass.cs` is formatted.
   - Other unformatted files in the submodule (`SubExtraUnformatted.cs`) remain unformatted, verifying that only modified files are touched.
   - The parent repository `main-repo` remains untouched.
 
-### Test 3: Submodule without a `.sln` (run from submodule root)
+### Test 3: Submodule without a solution file (run from submodule root)
 - **Action**: Runs `regitlint -f modified` from `main-repo/sub-without-sln`.
 - **Verification**:
   - `SubNoSlnLib/SubNoSlnClass.cs` is formatted using the parent solution fallback.

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-../ReGitLint/bin/Release/$1/ReGitLint -f commits -a bb3f9ba222 > /dev/null
+dotnet ../ReGitLint/bin/Release/$1/ReGitLint.dll -f commits -a bb3f9ba222 > /dev/null
 
 # ClassA.cs should get formatted
 diff ../Tests/HelloWorld/ClassA.cs ../Tests/FormatCommitA/Expected/ClassA.cs
