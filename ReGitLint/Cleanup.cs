@@ -12,7 +12,7 @@ public class Cleanup : ConsoleCommand
         Pattern = 1,
         Staged = 2,
         Modified = 4,
-        Commits = 8
+        Commits = 8,
     }
 
     private const int BatchSize = 7000;
@@ -23,8 +23,8 @@ public class Cleanup : ConsoleCommand
         SkipsCommandSummaryBeforeRunning();
         HasOption(
             "s|solution-file=",
-            "Optional. Path to .sln file.\n"
-                + "By default ReGitLint will use the first sln file it finds.",
+            "Optional. Path to .sln or .slnx file.\n"
+                + "By default ReGitLint will use the first sln or slnx file it finds.",
             x => SolutionFile = x.Trim()
         );
         HasOption(
@@ -392,8 +392,11 @@ public class Cleanup : ConsoleCommand
     private static string FindSlnFile(string dir)
     {
         var firstSolutionFile = Directory
-            .EnumerateFiles(dir, "*.sln", SearchOption.AllDirectories)
-            .FirstOrDefault();
+            .EnumerateFiles(dir, "*.sln?", SearchOption.AllDirectories)
+            .FirstOrDefault(x =>
+                x.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
+                || x.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)
+            );
 
         if (firstSolutionFile != null)
         {
@@ -411,11 +414,11 @@ public class Cleanup : ConsoleCommand
         var directoryInfo = new DirectoryInfo(Environment.CurrentDirectory);
         while (directoryInfo != null)
         {
-            if (
-                directoryInfo
-                    .GetDirectories(".git", SearchOption.TopDirectoryOnly)
-                    .Any()
-            )
+            var gitEntry = directoryInfo
+                .GetFileSystemInfos(".git", SearchOption.TopDirectoryOnly)
+                .FirstOrDefault();
+
+            if (gitEntry != null)
             {
                 return directoryInfo.FullName;
             }
@@ -424,7 +427,7 @@ public class Cleanup : ConsoleCommand
         }
 
         throw new InvalidOperationException(
-            "This tool should be run from within a git repository."
+            "This tool should be run from within a git repository, worktree or submodule."
         );
     }
 
@@ -612,7 +615,7 @@ you can install it by running the following command:
                 "less",
                 "scss",
                 "md",
-                "yaml"
+                "yaml",
             };
             exclude = @"--exclude=""";
 
